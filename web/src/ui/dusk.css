@@ -1165,3 +1165,16 @@ body { background: #0f1133; }
 .skelstack .skel:nth-child(2) { top: 12px; transform: scale(.96); opacity: .7; }
 .skelstack .skel:nth-child(3) { top: 24px; transform: scale(.92); opacity: .45; }
 @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+
+/* primary buttons: display face, heavier */
+.dusk .cta { font: 800 17px/1 var(--disp); letter-spacing: -0.01em; }
+/* segmented control on casts */
+.segs { display: flex; gap: 6px; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 4px; width: 100%; }
+.segs .seg { flex: 1; height: 44px; border-radius: 999px; font: 800 15px/1 var(--disp); color: var(--tx2); background: none; border: 0; }
+.segs .seg.on { background: #fff; color: #0f1133; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+/* the swipe deck, louder */
+.deck { height: 470px; }
+.swipe { gap: 34px; margin-top: 18px; }
+.swipe button { width: 76px; height: 76px; font-size: 26px; }
+.swipe .no { background: rgba(255,122,162,.14); border-color: rgba(255,122,162,.5); }
+.swipehint { text-align: center; font: 700 12px/1 var(--sys); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); margin-top: 8px; }

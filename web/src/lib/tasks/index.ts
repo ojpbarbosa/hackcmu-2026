@@ -11,6 +11,7 @@ export const TASKS = [
   'familiars.intro',
   'familiars.recap',
   'casts.prompt',
+  'casts.fact',
   'scout.plan',
   'scout.extract',
   'scout.fit',

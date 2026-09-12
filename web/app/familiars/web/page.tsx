@@ -88,7 +88,7 @@ export default function WebHome() {
 
   if (!state || !me || !graph) {
     return (
-      <div className="scr has-tabs">
+      <div className="scr has-tabs flow">
         <div className="top pad">
           <p className="s mute">waking your familiar…</p>
         </div>
@@ -103,7 +103,7 @@ export default function WebHome() {
   const empty = graph.met.length === 0;
 
   return (
-    <div className="scr has-tabs">
+    <div className="scr has-tabs flow">
       <div className="top">
         <div className="nav">
           <span className="pill chip">your web · {metCount}</span>
@@ -220,7 +220,7 @@ export default function WebHome() {
         ) : null}
       </div>
 
-      <div className="bottom" style={{ bottom: 118, gap: 12 }}>
+      <div className="bottom" style={{ gap: 12 }}>
         <Link className="missing glass" href={withRoom('/familiars/casts?tab=out&go=1', code)} style={{ margin: 0 }}>
           <div className="stack" style={{ display: 'flex' }}>
             <Creature traits={me.traits} size={34} glow={false} />

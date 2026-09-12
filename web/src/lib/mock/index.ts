@@ -6,6 +6,7 @@ import famExchange from './familiars.exchange';
 import famIntro from './familiars.intro';
 import famRecap from './familiars.recap';
 import castsPrompt from './casts.prompt';
+import castsFact from './casts.fact';
 import scoutPlan from './scout.plan';
 import scoutExtract from './scout.extract';
 import scoutFit from './scout.fit';
@@ -25,6 +26,7 @@ export const mocks: Record<TaskName, (input: never, seed: number) => unknown> = 
   'familiars.intro': famIntro,
   'familiars.recap': famRecap,
   'casts.prompt': castsPrompt,
+  'casts.fact': castsFact,
   'scout.plan': scoutPlan,
   'scout.extract': scoutExtract,
   'scout.fit': scoutFit,

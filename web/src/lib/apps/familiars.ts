@@ -66,7 +66,7 @@ export type FamState = {
     match: string | null;
     startedAt: number;
   } | null;
-  cast: { question: string; hook: string; at: number; answers: Record<string, string> } | null;
+  cast: { question: string; hook: string; at: number; answers: Record<string, string>; raw?: Record<string, string> } | null;
   recaps: Record<string, { cards: { label: string; big?: string; text: string }[]; at: number }>;
 };
 
@@ -435,7 +435,7 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
       delete casting[a.id];
       delete casting[b.id];
       if (state.pairs.some((x) => x.id === id)) return { ...state, pendingCasts, casting };
-      const { data } = await ctx.llm.json('familiars.exchange', { a: side(a), b: side(b) }, {
+      const { data } = await ctx.llm.json('familiars.exchange', { a: side(a), b: side(b), shared: sharedKeywords(a, b) }, {
         app: ctx.app,
         code: ctx.code,
         schema: ExchangeOut,
@@ -478,8 +478,16 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
       };
     }
 
+    case 'scoutStart': {
+      // fast write so every phone sees the search is on before the slow run lands
+      if (state.scout && state.scout.cards.length && action.now - state.scout.startedAt < SCOUT_COOLDOWN_MS) return state;
+      const keywords = circleKeywords(state);
+      const brief = String(p.brief ?? '').trim() || keywords.join(', ');
+      return { ...state, scout: { brief, status: ['Searching…'], cards: [], swipes: {}, match: null, startedAt: action.now } };
+    }
+
     case 'scout': {
-      if (state.scout && action.now - state.scout.startedAt < SCOUT_COOLDOWN_MS) return state;
+      if (state.scout && state.scout.cards.length && action.now - state.scout.startedAt < SCOUT_COOLDOWN_MS) return state;
       const keywords = circleKeywords(state);
       const brief = String(p.brief ?? '').trim() || keywords.join(', ');
       const started: FamState = {
@@ -523,9 +531,24 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
     }
 
     case 'answer': {
+      // the running transcript, kept raw; the fact is extracted on answerDone
       const text = String(p.text ?? '').trim();
       if (!state.cast || !text) return state;
-      return { ...state, cast: { ...state.cast, answers: { ...state.cast.answers, [me]: text } } };
+      return { ...state, cast: { ...state.cast, raw: { ...(state.cast.raw ?? {}), [me]: text } } };
+    }
+
+    case 'answerDone': {
+      if (!state.cast) return state;
+      const text = String(p.text ?? state.cast.raw?.[me] ?? '').trim();
+      if (!text) return state;
+      const { data } = await ctx.llm.json('casts.fact', { question: state.cast.question, transcript: text.slice(-1200) }, {
+        app: ctx.app,
+        code: ctx.code,
+        schema: z.object({ fact: z.string().min(1).max(160) }),
+        effort: 'low',
+        maxTokens: 400,
+      });
+      return { ...state, cast: { ...state.cast, answers: { ...state.cast.answers, [me]: data.fact.trim() } } };
     }
 
     case 'recap': {

@@ -152,10 +152,11 @@ export function Deck({
           ✓
         </button>
       </div>
-      <div className="row2" style={{ justifyContent: 'center', gap: 26, marginTop: 8 }}>
-        <p className="s mute">Not this one</p>
-        <p className="s mute">I&rsquo;m in</p>
+      <div className="row2" style={{ justifyContent: 'center', gap: 44, marginTop: 8 }}>
+        <p className="s" style={{ color: 'var(--rose)', fontWeight: 700 }}>Not this one</p>
+        <p className="s" style={{ color: 'var(--mint)', fontWeight: 700 }}>I&rsquo;m in</p>
       </div>
+      <p className="swipehint">swipe right if you are in · everyone in = a plan</p>
     </>
   );
 }

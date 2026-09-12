@@ -66,7 +66,7 @@ export default function YouPage() {
   };
 
   return (
-    <div className="scr has-tabs you">
+    <div className="scr has-tabs you flow">
       <div className="top">
         <div className="pad" style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div className="hero" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>

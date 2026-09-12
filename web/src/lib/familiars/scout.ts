@@ -8,9 +8,9 @@ import type { LLM } from '../llm';
  *  says it is cached. Server only. */
 
 const QUERIT_BASE = () => process.env.QUERIT_BASE_URL ?? 'https://api.querit.ai/v1';
-const TIMEOUT_MS = 6000;
+const TIMEOUT_MS = 20000;
 
-type SearchHit = { title: string; url: string; snippet: string };
+type SearchHit = { title: string; url: string; snippet: string; image?: string };
 
 async function querit<T>(path: string, body: object): Promise<T> {
   const key = process.env.QUERIT_API_KEY;
@@ -25,14 +25,57 @@ async function querit<T>(path: string, body: object): Promise<T> {
   return (await r.json()) as T;
 }
 
+type QueritResult = {
+  url?: string;
+  title?: string;
+  snippet?: string;
+  page_age?: string;
+  site_name?: string;
+  images?: string[];
+  sentence?: string[];
+};
+
+/** POST /v1/search: recent, US, English, with page images. */
 async function search(query: string): Promise<SearchHit[]> {
-  const body = await querit<{ results?: SearchHit[] }>('/search', { query, limit: 5 });
-  return body.results ?? [];
+  const body = await querit<{ results?: { result?: QueritResult[] } }>('/search', {
+    query,
+    count: 6,
+    chunksPerDoc: 1,
+    needContent: false,
+    filters: {
+      timeRange: { date: 'm2' },
+      geo: { countries: { include: ['united states'] } },
+      languages: { include: ['english'] },
+      complianceScene: 'abroad',
+    },
+    doc: { include: { images: true } },
+    sort: { pageAge: '' },
+  });
+  return (body.results?.result ?? [])
+    .filter((r) => !!r.url)
+    .map((r) => ({
+      url: r.url as string,
+      title: r.title ?? '',
+      snippet: [r.snippet ?? '', r.page_age ? `(page age: ${r.page_age})` : ''].join(' ').trim(),
+      image: Array.isArray(r.images) ? r.images[0] : undefined,
+    }));
 }
 
+/** POST /v1/contents: one page as text, with the LLM-highlighted event details and metadata. */
 async function fetchPage(url: string): Promise<{ text: string; og?: { image?: string } }> {
-  const body = await querit<{ text?: string; og?: { image?: string } }>('/fetch', { url });
-  return { text: body.text ?? '', og: body.og };
+  const body = await querit<{
+    results?: { url?: string; content?: string; highlights?: string[]; extrasMeta?: { title?: string; publishTime?: string; siteName?: string } }[];
+  }>('/contents', {
+    urls: [url],
+    format: 'text',
+    crawlTimeout: 15,
+    extrasMeta: true,
+    highlights: { query: 'event date, time, venue, address, price, how to attend', maxCharacters: 2500 },
+  });
+  const r = body.results?.[0];
+  const meta = r?.extrasMeta ? `Title: ${r.extrasMeta.title ?? ''}\nPublished: ${r.extrasMeta.publishTime ?? ''}\nSite: ${r.extrasMeta.siteName ?? ''}\n` : '';
+  const high = r?.highlights?.length ? `Highlights:\n${r.highlights.join('\n')}\n\n` : '';
+  return { text: `${meta}${high}${r?.content ?? ''}` };
 }
 
 const PlanOut = z.object({ queries: z.array(z.string()).min(1).max(3) });
@@ -125,7 +168,7 @@ export async function runScout(
           cost: d.cost,
           kind: 'listed_event',
           source: p.hit.url,
-          image: p.page.og?.image,
+          image: p.page.og?.image ?? p.hit.image,
           why: p.hit.snippet?.slice(0, 90) ?? `Close to ${keywords[0] ?? 'what you all said'}.`,
         });
       } catch {

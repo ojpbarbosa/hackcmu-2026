@@ -3,9 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AppName, Member, ObserveEvent, RoomDoc } from '@/lib/types';
 import { noteServerNow, serverNow } from './useServerClock';
 
-const POLL_VISIBLE = 800;
-const POLL_HIDDEN = 2000;
-const EVENTS_MS = 2000;
+const POLL_VISIBLE = 350;
+const POLL_HIDDEN = 1200;
+const EVENTS_MS = 5000;
 
 /** The one realtime primitive. Joins on mount, polls the room with ?v= so an
  *  unchanged room costs a 304, and applies the server's echo of every act. */

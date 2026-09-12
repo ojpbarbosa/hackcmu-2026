@@ -46,7 +46,7 @@ function icsFor(card: Card): string {
 
 export default function CastsPage() {
   const router = useRouter();
-  const { code, state, me, act, params } = useFamiliars();
+  const { code, state, me, act, params, now } = useFamiliars();
   const [tab, setTab] = useState<'tonight' | 'out'>('tonight');
   const [pending, setPending] = useState(false);
   const [step, setStep] = useState(0);
@@ -109,6 +109,7 @@ export default function CastsPage() {
   }
 
   const match = isMatch(state);
+  const serverPending = !!(state.scout && state.scout.cards.length === 0 && now() - state.scout.startedAt < 120_000);
   const cards = state.scout?.cards ?? [];
   const mine = cards.filter((c) => !dirFor(state, c.id, me.id));
 
@@ -122,6 +123,7 @@ export default function CastsPage() {
       .slice(0, 8)
       .join(', ');
     try {
+      await act('scoutStart', { brief });
       await act('scout', { brief });
     } finally {
       setBusy(false);
@@ -192,16 +194,12 @@ export default function CastsPage() {
   return (
     <div className="scr has-tabs">
       <div className="top">
-        <div className="nav">
-          <button
-            type="button"
-            className={tab === 'tonight' ? 'pill solid chip on' : 'pill chip'}
-            onClick={() => setTab('tonight')}
-          >
-            tonight
+        <div className="segs">
+          <button type="button" className={tab === 'tonight' ? 'seg on' : 'seg'} onClick={() => setTab('tonight')}>
+            Tonight
           </button>
-          <button type="button" className={tab === 'out' ? 'pill solid chip on' : 'pill chip'} onClick={() => setTab('out')}>
-            out
+          <button type="button" className={tab === 'out' ? 'seg on' : 'seg'} onClick={() => setTab('out')}>
+            Out
           </button>
         </div>
 
@@ -262,6 +260,20 @@ export default function CastsPage() {
                 </div>
 
                 <div className="caught">
+                  {Object.keys(state.cast.raw ?? {})
+                    .filter((who) => !state.cast?.answers[who])
+                    .map((who) => {
+                      const f = state.familiars[who];
+                      return (
+                        <div className="c" key={`raw-${who}`}>
+                          {f ? <Creature traits={f.traits} size={40} glow={false} /> : null}
+                          <div style={{ flex: 1 }}>
+                            <div className="skel line" style={{ width: '60%', marginBottom: 6 }} />
+                            <small>{f ? `${f.human.name} is talking…` : 'someone is talking…'}</small>
+                          </div>
+                        </div>
+                      );
+                    })}
                   {Object.entries(state.cast.answers).map(([who, text]) => {
                     const f = state.familiars[who];
                     return (
@@ -303,14 +315,14 @@ export default function CastsPage() {
         ) : null}
 
         {tab === 'out' ? (
-          !state.scout || pending ? (
+          !state.scout || pending || serverPending ? (
             <div className="pad" style={{ marginTop: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <Creature traits={me.traits} size={140} glow mood={pending ? 'talk' : 'idle'} />
               </div>
-              <p className="d2 h2">{pending ? `${me.name} is out looking` : `${me.name} is home`}</p>
-              <p className="s mute">{pending ? STEPS[step] : 'Send it out and it comes back with three things to do.'}</p>
-              {pending ? (
+              <p className="d2 h2">{pending || serverPending ? `${me.name} is out looking` : `${me.name} is home`}</p>
+              <p className="s mute">{pending || serverPending ? STEPS[step] : 'Send it out and it comes back with three things to do.'}</p>
+              {pending || serverPending ? (
                 <div className="skelstack" style={{ marginTop: 6 }}>
                   <div className="skel card" />
                   <div className="skel card" />
@@ -370,6 +382,7 @@ export default function CastsPage() {
             type="button"
             onClick={() => {
               rec.stop();
+              void act('answerDone');
             }}
           >
             Done talking
