@@ -17,6 +17,7 @@ export type LlmOpts<T> = {
   app: AppName;
   code?: string;
   effort?: Effort;
+  maxTokens?: number;
   schema?: ZodType<T>;
 };
 
@@ -44,7 +45,13 @@ function runMock<T>(task: TaskName, input: object): T {
 
 type ChatResult = { text: string; tokensIn?: number; tokensOut?: number; reasoning?: string };
 
-async function callChat(p: Exclude<Provider, 'mock'>, task: TaskName, input: object, effort: Effort): Promise<ChatResult> {
+async function callChat(
+  p: Exclude<Provider, 'mock'>,
+  task: TaskName,
+  input: object,
+  effort: Effort,
+  maxTokens?: number,
+): Promise<ChatResult> {
   const prompt = prompts[task];
   const url = p === 'ifm' ? IFM_URL : `${(process.env.LLM_BASE_URL ?? '').replace(/\/$/, '')}/chat/completions`;
   const key = p === 'ifm' ? process.env.IFM_API_KEY : process.env.LLM_API_KEY;
@@ -60,7 +67,7 @@ async function callChat(p: Exclude<Provider, 'mock'>, task: TaskName, input: obj
       response_format: { type: 'json_object' },
       temperature: 0.3,
       reasoning_effort: effort,
-      max_tokens: 2048,
+      max_tokens: maxTokens ?? 2048,
     }),
   });
   if (!res.ok) throw new Error(`${p} ${res.status} ${(await res.text()).slice(0, 200)}`);
@@ -116,7 +123,7 @@ export const llm: LLM = {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const suffix = lastError ? { __previousError: lastError } : {};
-        const out = await callChat(want, task, { ...input, ...suffix }, effort);
+        const out = await callChat(want, task, { ...input, ...suffix }, effort, opts.maxTokens);
         const raw = parse(out.text);
         const data = opts.schema ? opts.schema.parse(raw) : (raw as T);
         return finish(data, want, {

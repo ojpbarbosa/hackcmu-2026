@@ -9,15 +9,15 @@ const display = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: 'four apps',
-  description: 'cast, familiars, detour, palate — HackCMU 2026',
+  title: 'Familiars',
+  description: 'Meet through your familiar',
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#F6F7FB',
+  themeColor: '#0F1133',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
