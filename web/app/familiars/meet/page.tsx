@@ -56,6 +56,7 @@ export default function MeetPage() {
   const [castAt, setCastAt] = useState(0);
   const [shown, setShown] = useState(0);
   const [dismissed, setDismissed] = useState<string | null>(null);
+  const [catching, setCatching] = useState<string | null>(null);
 
   // the 8 s cast TTL is wall-clock, so re-render on a timer
   useEffect(() => {
@@ -140,6 +141,9 @@ export default function MeetPage() {
     // one run per pair
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pair?.id]);
+
+  const myCastOut = !!(me && state && state.pendingCasts.some((c) => c.from === me.id));
+  const caught = !!(me && castAt > 0 && Date.now() - castAt < 30000 && Date.now() - castAt > 1500 && !myCastOut && !pair);
 
   const castingOthers =
     me && state ? Object.keys(state.casting ?? {}).filter((id) => id !== me.id) : [];
@@ -234,10 +238,21 @@ export default function MeetPage() {
           </div>
         </div>
         <div className="bottom">
-          <button className="cta gold" type="button" onClick={() => void act('catch', { castId: incoming.id })}>
+          <button
+            className="cta gold"
+            type="button"
+            disabled={catching === incoming.id}
+            onClick={() => {
+              setCatching(incoming.id);
+              void act('catch', { castId: incoming.id }).finally(() => setCatching(null));
+            }}
+          >
             <Spark />
-            Catch
+            {catching === incoming.id ? `${theirs.name} and ${me?.name ?? 'yours'} are meeting…` : 'Catch'}
           </button>
+          {catching === incoming.id && (
+            <div className="skel line" style={{ width: '70%', alignSelf: 'center' }} />
+          )}
           <button className="cta ghost" type="button" onClick={() => setDismissed(incoming.id)}>
             Not now
           </button>
@@ -297,9 +312,16 @@ export default function MeetPage() {
         </div>
         <div className="pad" style={{ marginTop: 26, display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'center' }}>
           <p className="d2">{pulsing ? `cast out…` : `wiggle to cast ${me?.name ?? 'your familiar'}`}</p>
-          <div className="meter">
-            <i style={{ width: pulsing ? '100%' : `${Math.max(6, Math.min(100, Math.round(level * 70)))}%` }} />
-          </div>
+          {caught ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+              <p className="s mute">someone caught {me?.name}. The familiars are talking…</p>
+              <div className="skel line" style={{ width: '70%' }} />
+            </div>
+          ) : (
+            <div className="meter">
+              <i style={{ width: pulsing ? '100%' : `${Math.max(6, Math.min(100, Math.round(level * 70)))}%` }} />
+            </div>
+          )}
         </div>
       </div>
       <div className="bottom">

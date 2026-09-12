@@ -428,7 +428,8 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
       const a = state.familiars[cast.from];
       const b = state.familiars[me];
       if (!a || !b) return state;
-      const id = pairIdFor(a.id, b.id);
+      // one pair per catch, so the same two people can meet again tomorrow
+      const id = `pair_${cast.id}`;
       const pendingCasts = state.pendingCasts.filter((c) => c.id !== cast.id);
       const casting = { ...state.casting };
       delete casting[a.id];

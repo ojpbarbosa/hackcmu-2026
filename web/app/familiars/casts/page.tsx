@@ -117,6 +117,16 @@ export default function CastsPage() {
     }
   };
 
+  // ?go=1 (the override from the web home): start the search on arrival
+  const autoRef = useRef(false);
+  useEffect(() => {
+    if (autoRef.current || !me || !state) return;
+    if (new URLSearchParams(window.location.search).get('go') !== '1') return;
+    autoRef.current = true;
+    if (!state.scout) void sendOut();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me, state]);
+
   // ---- the one everyone swiped right ------------------------------------
   if (tab === 'out' && match) {
     return (
@@ -297,10 +307,10 @@ export default function CastsPage() {
               <p className="d2 h2">{pending ? `${me.name} is out looking` : `${me.name} is home`}</p>
               <p className="s mute">{pending ? STEPS[step] : 'Send it out and it comes back with three things to do.'}</p>
               {pending ? (
-                <div className="wave" style={{ height: 14 }}>
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <i key={i} />
-                  ))}
+                <div className="skelstack" style={{ marginTop: 6 }}>
+                  <div className="skel card" />
+                  <div className="skel card" />
+                  <div className="skel card" />
                 </div>
               ) : (
                 <button className="cta glow gold" type="button" onClick={sendOut} disabled={busy}>

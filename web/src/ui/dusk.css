@@ -1152,3 +1152,16 @@
 /* Safari paints its top and bottom bars from these: one dark colour for both */
 html { color-scheme: dark; background: #0f1133; }
 body { background: #0f1133; }
+
+/* skeletons */
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel { border-radius: 14px; background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.14) 50%, rgba(255,255,255,.06) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+.skel.line { height: 14px; }
+.skel.card { height: 300px; border-radius: 26px; }
+.skel.pill { height: 34px; border-radius: 999px; }
+.skel.dot { border-radius: 50%; }
+.skelstack { position: relative; height: 330px; }
+.skelstack .skel { position: absolute; left: 0; right: 0; top: 0; }
+.skelstack .skel:nth-child(2) { top: 12px; transform: scale(.96); opacity: .7; }
+.skelstack .skel:nth-child(3) { top: 24px; transform: scale(.92); opacity: .45; }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } }

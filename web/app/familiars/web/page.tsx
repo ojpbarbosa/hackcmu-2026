@@ -7,7 +7,7 @@ import { Tabs } from '../_components/Tabs';
 import { useFamiliars, withRoom } from '../_components/useFamiliars';
 import { friendsOfFriends, keepMissing, metIds, webGroups } from '@/lib/apps/familiars';
 import type { Familiar, FamState } from '@/lib/apps/familiars';
-import { traitsFor } from '@/lib/familiars/creature';
+import { traitsFor, PALETTE, HUES } from '@/lib/familiars/creature';
 
 const CX = 186;
 const CY = 380;
@@ -15,7 +15,7 @@ const CY = 380;
 type Placed = { id: string; x: number; y: number; label: string | null; fam: Familiar | null };
 
 /** The web is not a force layout: the same room always draws the same picture. */
-function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; tags: { label: string; x: number; y: number }[] } {
+function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; tags: { label: string; x: number; y: number }[]; nebs: { x: number; y: number; color: string }[]; links: { a: Placed; b: Placed }[] } {
   const groups = webGroups(state, meId);
   const flat: { id: string; label: string }[] = [];
   for (const g of groups) for (const m of g.members) flat.push({ id: m, label: g.label });
@@ -54,7 +54,24 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
       y: CY - 240 * Math.sin(a),
     };
   });
-  return { met, fof, tags };
+  // one soft nebula per group, in the hue of its first familiar
+  const nebs: { x: number; y: number; color: string }[] = [];
+  for (const g of groups) {
+    const pts = met.filter((p) => g.members.includes(p.id));
+    if (!pts.length) continue;
+    const first = state.familiars[g.members[0]];
+    const hue = first ? HUES[first.traits.hue] : 'lilac';
+    nebs.push({ x: pts.reduce((a, p) => a + p.x, 0) / pts.length, y: pts.reduce((a, p) => a + p.y, 0) / pts.length, color: PALETTE[hue].c2 });
+  }
+  // people you met who also met each other
+  const byId = new Map(met.map((p) => [p.id, p]));
+  const links: { a: Placed; b: Placed }[] = [];
+  for (const pr of state.pairs) {
+    const a = byId.get(pr.a);
+    const b = byId.get(pr.b);
+    if (a && b) links.push({ a, b });
+  }
+  return { met, fof, tags, nebs, links };
 }
 
 export default function WebHome() {
@@ -137,7 +154,20 @@ export default function WebHome() {
       </div>
 
       <div className="web">
+        {graph.nebs.map((n, i) => (
+          <div className="neb" key={i} style={{ left: n.x - 90, top: n.y - 80, width: 180, height: 160, background: n.color }} />
+        ))}
         <svg viewBox="0 0 373 470" aria-hidden="true">
+          {graph.links.map((l, i) => (
+            <path
+              key={`l${i}`}
+              d={`M${l.a.x} ${l.a.y} Q ${(l.a.x + l.b.x) / 2} ${Math.min(l.a.y, l.b.y) - 30}, ${l.b.x} ${l.b.y}`}
+              stroke="rgba(255,255,255,.12)"
+              strokeWidth="1"
+              strokeDasharray="2 5"
+              fill="none"
+            />
+          ))}
           {graph.met.map((p) => (
             <path
               key={p.id}
@@ -191,6 +221,12 @@ export default function WebHome() {
       </div>
 
       <div className="bottom" style={{ bottom: 118, gap: 12 }}>
+        <Link className="missing glass" href={withRoom('/familiars/casts?tab=out&go=1', code)} style={{ margin: 0 }}>
+          <div className="stack" style={{ display: 'flex' }}>
+            <Creature traits={me.traits} size={34} glow={false} />
+          </div>
+          <b>{state.scout?.cards?.length ? 'This weekend’s plans' : `Send ${me.name} out for the weekend`}</b>
+        </Link>
         {missing.length ? (
           <Link className="missing glass" href={withRoom('/familiars/missed', code)} style={{ margin: 0 }}>
             <div className="stack" style={{ display: 'flex' }}>
