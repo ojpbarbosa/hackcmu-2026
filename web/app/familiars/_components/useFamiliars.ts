@@ -32,7 +32,7 @@ export type FamiliarsRoom = {
 export function useFamiliars(): FamiliarsRoom {
   const [code, setCode] = useState<string | null>(null);
   const [params, setParams] = useState<URLSearchParams>(() => new URLSearchParams());
-  const { member, setName, setSeat } = useMember();
+  const { member, setName, setSeat } = useMember('familiars');
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);

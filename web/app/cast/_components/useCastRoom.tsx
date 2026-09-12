@@ -9,7 +9,7 @@ import type { Member, ObserveEvent } from '@/lib/types';
 import { arm } from './reel';
 
 /** the key useMember owns; we write it directly only to honour ?as=/?id= */
-const MEMBER_KEY = 'hack.member';
+const MEMBER_KEY = 'hack.member.cast';
 
 export type CastRoom = {
   code: string | null;
@@ -32,7 +32,7 @@ export type CastRoom = {
 export function useCastRoom(): CastRoom {
   const [code, setCode] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const { member, setName } = useMember();
+  const { member, setName } = useMember('cast');
   const { state, members, act, serverNow, connected, events } = useRoom<CastState>('cast', code, member);
 
   useEffect(() => {

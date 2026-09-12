@@ -418,6 +418,23 @@ export const cast: AppDef<CastState> = {
         return next;
       }
 
+      case 'revealNow': {
+        // Escape hatch for a phone that locked or wandered off: anyone who has answered can
+        // unlock the reveal once at least two answers are in.
+        const castId = typeof p.castId === 'string' ? p.castId : state.casts[0]?.id;
+        const target = state.casts.find((c) => c.id === castId);
+        if (!target || target.seeded || target.revealedAt || isViewer(me)) return state;
+        if (!target.answers[me] || Object.keys(target.answers).length < 2) return state;
+        const next: CastState = {
+          ...state,
+          casts: state.casts.map((c) => (c.id === target.id ? { ...c, revealedAt: at } : c)),
+        };
+        if (next.mode === 'catch' && !next.plans.some((pl) => pl.castId === target.id)) {
+          return makePlan(next, ctx, target.id, at);
+        }
+        return next;
+      }
+
       case 'newPlan': {
         const castId = typeof p.castId === 'string' ? p.castId : state.casts[0]?.id;
         if (!castId) return state;

@@ -47,7 +47,7 @@ export function saveVisited(ids: string[]): void {
 export function useDetour(opts?: { passive?: boolean }) {
   const passive = !!opts?.passive;
   const [code, setCode] = useState<string | null>(null);
-  const { member, setName } = useMember();
+  const { member, setName } = useMember('detour');
   const room = useRoom<DetourState>('detour', code, passive ? null : member);
 
   useEffect(() => {

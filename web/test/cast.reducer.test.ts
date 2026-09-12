@@ -95,6 +95,24 @@ describe('cast reducer', () => {
     expect(Object.keys(latest(s).answers).sort()).toEqual([A.id, B.id, C.id]);
   });
 
+  it('revealNow unlocks a stalled cast once two answers are in, only for someone who answered', async () => {
+    let s = cast.initial('TEST');
+    const members = [A, B, C];
+    s = await run(s, members, 'castNow', {}, A.id, 1000);
+    const id = latest(s).id;
+
+    s = await run(s, members, 'answer', { castId: id, text: 'the fish bar on Forbes' }, A.id, 2000);
+    s = await run(s, members, 'revealNow', { castId: id }, A.id, 2500);
+    expect(latest(s).revealedAt).toBeNull(); // one answer is not enough
+
+    s = await run(s, members, 'answer', { castId: id, text: 'Phipps' }, B.id, 3000);
+    s = await run(s, members, 'revealNow', { castId: id }, C.id, 3500);
+    expect(latest(s).revealedAt).toBeNull(); // C never answered, cannot force it
+
+    s = await run(s, members, 'revealNow', { castId: id }, A.id, 4000);
+    expect(latest(s).revealedAt).toBe(4000);
+  });
+
   it('does not let a phone that joined mid-cast hold the reveal up', async () => {
     let s = cast.initial('TEST');
     const late = { ...D, joinedAt: 5_000 };

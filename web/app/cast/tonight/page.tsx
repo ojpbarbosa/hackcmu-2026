@@ -10,7 +10,7 @@ import { castById, castPeople, answeredCount, isTyping, latestCast, personOf, pl
  *  until the last person casts, then the whole page unlocks at once. */
 export default function Tonight() {
   const room = useCastRoom();
-  const { state, members, me, code, serverNow, ready, member, setName } = room;
+  const { state, members, me, code, serverNow, ready, member, setName, act } = room;
   useTicker(500);
   const [castId, setCastId] = useState<string | null>(null);
 
@@ -94,6 +94,12 @@ export default function Tonight() {
         {cast && !cast.answers[me] && !cast.seeded ? (
           <CTA variant="grad" href={`/cast/cast?room=${code ?? ''}`}>
             Cast your answer
+          </CTA>
+        ) : null}
+
+        {cast && !revealed && !cast.seeded && cast.answers[me] && n >= 2 && waitingOn.length > 0 ? (
+          <CTA variant="ghost" onClick={() => act('revealNow', { castId: cast.id })}>
+            Reveal without {waitingOn.length === 1 ? waitingOn[0].name : `the other ${waitingOn.length}`}
           </CTA>
         ) : null}
 

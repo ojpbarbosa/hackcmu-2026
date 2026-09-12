@@ -28,7 +28,7 @@ export type PalateRoom = {
 
 /** One room per table. The code lives in ?room=; the first phone to arrive creates it. */
 export function usePalate(): PalateRoom {
-  const { member: stored, setName } = useMember();
+  const { member: stored, setName } = useMember('palate');
   const [code, setCode] = useState<string | null>(null);
   const [as, setAs] = useState<Member | null>(null);
 

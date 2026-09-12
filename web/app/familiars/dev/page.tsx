@@ -72,7 +72,7 @@ export default function DevSeedPage() {
       }
 
       window.localStorage.setItem(
-        'hack.member',
+        'hack.member.familiars',
         JSON.stringify({ id: A.id, name: A.name, tone: 1, joinedAt: t, lastSeen: t, seat: A.seat }),
       );
       window.location.assign(`${to}${to.includes('?') ? '&' : '?'}room=${code}`);
