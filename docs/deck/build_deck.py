@@ -65,17 +65,21 @@ def row(s, ids, y=1.85, h=4.75):
 
 
 def tech(s, items, y=6.72):
-    """The strip that keeps the technical story on every slide: name · what it does here."""
-    x = 0.9
-    for name, what in items:
-        w = 0.28 + 0.088 * len(name) + 0.072 * len(what) + 0.2
+    """The strip that keeps the technical story on every slide: name · what it does here.
+    Shrinks the whole row when it would run past the right margin."""
+    widths = [0.28 + 0.088 * len(n) + 0.072 * len(w) + 0.2 for n, w in items]
+    total = sum(widths) + 0.14 * (len(items) - 1)
+    k = min(1.0, (13.333 - 1.8) / total)
+    size = max(8.5, 11 * k); x = 0.9
+    for (name, what), w in zip(items, widths):
+        w *= k
         pill = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(0.42))
         pill.adjustments[0] = 0.5; pill.fill.solid(); pill.fill.fore_color.rgb = PILL_BG; pill.line.fill.background(); pill.shadow.inherit = False
-        tf = pill.text_frame; tf.word_wrap = False; tf.margin_left = tf.margin_right = Inches(0.14); tf.margin_top = tf.margin_bottom = Inches(0); tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        tf = pill.text_frame; tf.word_wrap = False; tf.margin_left = tf.margin_right = Inches(0.14 * k); tf.margin_top = tf.margin_bottom = Inches(0); tf.vertical_anchor = MSO_ANCHOR.MIDDLE
         p = tf.paragraphs[0]; p.alignment = PP_ALIGN.LEFT
-        r = p.add_run(); r.text = name; r.font.size = Pt(11); r.font.bold = True; r.font.color.rgb = PILL_TX; r.font.name = F
-        r = p.add_run(); r.text = f'  {what}'; r.font.size = Pt(11); r.font.bold = False; r.font.color.rgb = INK2; r.font.name = F
-        x += w + 0.14
+        r = p.add_run(); r.text = name; r.font.size = Pt(size); r.font.bold = True; r.font.color.rgb = PILL_TX; r.font.name = F
+        r = p.add_run(); r.text = f'  {what}'; r.font.size = Pt(size); r.font.bold = False; r.font.color.rgb = INK2; r.font.name = F
+        x += w + 0.14 * k
 
 
 # 1 title
@@ -100,13 +104,13 @@ for k, (n, d, src) in enumerate(stats):
     x = 0.9 + (k % 2) * 6.2; y = 2.75 + (k // 2) * 1.9
     text(s, x, y, 2.2, 1.0, [[(n, 54, ACC, True)]], spacing=0.9)
     text(s, x + 2.3, y + 0.12, 3.7, 1.2, [[(d, 16, INK, False)], [(src, 11, MUTE, False)]], spacing=1.2)
-text(s, 0.9, 6.5, 11, 0.4, [[('“You can get a meal without talking to another human.” · The Tartan, CMU, 2024', 12, MUTE, False)]])
+text(s, 0.9, 6.5, 11, 0.4, [[('“You can get a meal without talking to another human.” · The Tartan, CMU, 2024', 16, INK, False)]])
 notes(s, 'More than half of students say they are lonely, and it is not for lack of people. The problem is the first move. BeReal proved a synchronized moment brings people together, and died because a photo has nothing to say. Three out of four group plans die in the chat.')
 
 # 3 idea
 s = prs.slides.add_slide(BLANK); bg(s)
 label(s, 0.9, 0.7, 'the idea')
-text(s, 0.9, 1.05, 7.8, 1.4, [[('Manufacture the introduction.', 46, INK, True)]], spacing=1.0)
+text(s, 0.9, 1.05, 7.8, 1.4, [[('AI warm intros.', 46, INK, True)]], spacing=1.0)
 text(s, 0.9, 3.05, 6.9, 3.0, [[('Each person gets a familiar: a small model that runs locally, on their side, and knows only them.', 22, INK2, False)], [('', 10, INK2, False)], [('Two familiars meet first. You get one line worth saying.', 22, INK, True)]], spacing=1.25)
 phone(s, 5, 8.4, 0.5, 6.0)
 tech(s, [('K2 Horizon 0.9B', 'one per person, local, your own agent'), ('K2 Horizon 375B', 'the shared world: matching, intros, recaps')])
@@ -136,7 +140,7 @@ label(s, 0.9, 0.7, '3 · web')
 text(s, 0.9, 1.05, 5.2, 2.0, [[('Home is who you have met.', 40, INK, True)]], spacing=1.0)
 text(s, 0.9, 3.2, 5.0, 3.0, [[('People stand in the interests you share. Friends of friends fade upward.', 20, INK2, False)], [('', 8, INK2, False)], [('The ones you keep missing get an intro carried by a friend’s familiar.', 20, INK, False)]], spacing=1.25)
 phone(s, 6, 6.6, 0.5, 5.9); phone(s, 7, 9.9, 0.5, 5.9)
-tech(s, [('K2 375B', 'groups the web by shared interests, writes the intro line'), ('Next.js · Vercel · Upstash', 'one shared room for every phone')])
+tech(s, [('K2 375B', 'groups the web by shared interests, writes the intro line'), ('Next.js · Vercel · MongoDB Atlas', 'one shared room for every phone')])
 notes(s, 'Home is your web: the people you met, grouped by what you share, and friends of friends fading upward. The 375B writes the intro line, and a friend’s familiar carries it.')
 
 # 7 casts
@@ -154,7 +158,7 @@ label(s, 0.9, 0.55, '5 · out')
 text(s, 0.9, 0.8, 8.0, 1.1, [[('Merlin goes out and finds three. Swipe.', 28, INK, True)]])
 text(s, 9.3, 0.9, 3.4, 1.0, [[('Real events, with the source. When everyone swipes right on the same one, it is a plan.', 13, INK2, False)]], spacing=1.2)
 row(s, [9, 10, 11])
-tech(s, [('Querit', 'web search and page fetch for real events'), ('K2 375B', 'plans the queries, extracts the facts, never invents')])
+tech(s, [('Querit', 'web search and page fetch for real events'), ('K2 375B', 'plans the queries, extracts the facts, never invents'), ('K2 0.9B', 'personal familiar acts on your behalf locally')])
 notes(s, 'Send your familiar out. Querit searches and fetches real pages, the 375B plans the queries and extracts the facts, and it never invents an event. Three cards, swipe, and when everyone is in, it is a plan.')
 
 # 9 recap
@@ -165,14 +169,6 @@ text(s, 0.9, 3.2, 5.2, 2.2, [[('Who it met, the line that worked, and the person
 phone(s, 12, 6.6, 0.5, 5.9); phone(s, 13, 9.9, 0.5, 5.9)
 tech(s, [('K2 375B', 'writes the recap from the day’s web'), ('ElevenLabs TTS', 'your familiar tells it')])
 notes(s, 'Every night your familiar tells you the story: who it met, the line that worked, and the person who was two tables away all night. The 375B writes it from the day’s web; your familiar’s voice tells it.')
-
-# 10 room
-s = prs.slides.add_slide(BLANK); bg(s)
-label(s, 0.9, 0.55, 'the room')
-text(s, 0.9, 0.8, 9, 1.0, [[('The projector shows the web growing.', 28, INK, True)]])
-tv(s, 14, 2.15, 1.5, 9.0)
-tech(s, [('Upstash', 'one shared state for every phone and the projector'), ('Next.js on Vercel', 'polling rooms, nothing to install')], y=6.85)
-notes(s, 'On the projector the whole room’s web grows live, and the stage shows who is meeting right now.')
 
 # 11 why multiplayer
 s = prs.slides.add_slide(BLANK); bg(s)
