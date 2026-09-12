@@ -187,7 +187,9 @@ export default function DetourWalk() {
                 boxShadow: 'none',
               }}
             >
-              <Icon name="zap" />
+              <span style={{ color: 'var(--acc)', display: 'flex' }}>
+                <Icon name="zap" />
+              </span>
               <p className="bsm" style={{ color: 'var(--t2)' }}>
                 {walk.walk.legs.filter((l) => l.poi).length} places on this walk you have never stood in. The last
                 nudge arrives before the clock does.
