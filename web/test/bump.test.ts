@@ -77,6 +77,33 @@ describe('bump pairing', () => {
     expect((doc?.state as PairState).pairs[0]).toMatchObject({ a: 'm1', b: 'm2' });
   });
 
+  it('pairs two bumps recorded concurrently, converging on one pair', async () => {
+    const t = Date.now();
+    const [a, b] = await Promise.all([
+      recordBump({ ...base, code: 'CONC1', memberId: 'm1', at: t }),
+      recordBump({ ...base, code: 'CONC1', memberId: 'm2', at: t + 40 }),
+    ]);
+    const sa = await bumpStatus(a.bumpId);
+    const sb = await bumpStatus(b.bumpId);
+    expect(sa.matched?.withMemberId).toBe('m2');
+    expect(sb.matched?.withMemberId).toBe('m1');
+    expect(sa.matched?.pairId).toBe(sb.matched?.pairId);
+    const doc = await getRoom(APP, 'CONC1');
+    const ids = new Set((doc?.state as PairState).pairs.map((p) => p.pairId));
+    expect(ids.size).toBe(1);
+  });
+
+  it('keeps pairing while a third phone knocks repeatedly', async () => {
+    const t = Date.now();
+    await recordBump({ ...base, code: 'NOISY', memberId: 'm3', at: t - 3000 });
+    await recordBump({ ...base, code: 'NOISY', memberId: 'm3', at: t - 1500 });
+    const a = await recordBump({ ...base, code: 'NOISY', memberId: 'm1', at: t });
+    await recordBump({ ...base, code: 'NOISY', memberId: 'm3', at: t + 900 });
+    const b = await recordBump({ ...base, code: 'NOISY', memberId: 'm2', at: t + 120 });
+    expect(b.matched?.withMemberId).toBe('m1');
+    expect((await bumpStatus(a.bumpId)).matched?.withMemberId).toBe('m2');
+  });
+
   it('does not pair across rooms', async () => {
     const t = Date.now();
     await recordBump({ ...base, code: 'ROOMA', memberId: 'm1', at: t });
