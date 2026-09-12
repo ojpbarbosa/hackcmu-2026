@@ -70,7 +70,7 @@ export type FamState = {
   recaps: Record<string, { cards: { label: string; big?: string; text: string }[]; at: number }>;
 };
 
-export const CAST_TTL_MS = 8000;
+export const CAST_TTL_MS = 20000;
 const ARM_TTL_MS = 10 * 60 * 1000;
 const SCOUT_COOLDOWN_MS = 60_000;
 const NAME_OK = /^[A-Z][a-z]{2,11}$/;

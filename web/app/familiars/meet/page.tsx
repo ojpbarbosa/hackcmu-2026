@@ -71,7 +71,7 @@ export default function MeetPage() {
     void act('wiggle');
   }, [act, me]);
 
-  const { available, request } = useWiggle({ enabled: armed, onSpike });
+  const { available, permission, request } = useWiggle({ enabled: armed, onSpike });
 
   // leave casting mode behind us
   const actRef = useRef(act);
@@ -83,8 +83,13 @@ export default function MeetPage() {
   }, []);
 
   const enter = useCallback(async () => {
-    await request();
-    await act('arm');
+    // arm on the server first: the catch card must never depend on a sensor permission
+    void act('arm');
+    try {
+      await request();
+    } catch {
+      /* no motion: the manual wiggle button stays */
+    }
   }, [request, act]);
 
   const nowMs = now();
@@ -129,7 +134,7 @@ export default function MeetPage() {
 
   const castingOthers =
     me && state ? Object.keys(state.casting ?? {}).filter((id) => id !== me.id) : [];
-  const pulsing = castAt > 0 && Date.now() - castAt < 8000;
+  const pulsing = castAt > 0 && Date.now() - castAt < 20000;
 
   /* ------------------------------------------------------------------- duet */
   if (pair && famA && famB) {
@@ -191,30 +196,6 @@ export default function MeetPage() {
     );
   }
 
-  /* ------------------------------------------------------------- not armed */
-  if (!armed) {
-    return (
-      <div className="scr">
-        <div className="top">
-          <div className="nav">
-            <span className="pill">meet</span>
-          </div>
-          <div className="pad" style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', textAlign: 'center' }}>
-            {me && <Creature traits={me.traits} size={150} glow />}
-            <p className="d2">cast {me?.name ?? 'your familiar'} to the room</p>
-            <p className="mute body">Hold the phone out and wiggle it. Someone near you catches.</p>
-          </div>
-        </div>
-        <div className="bottom">
-          <button className="cta gold" type="button" onClick={() => void enter()}>
-            Enter casting mode
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  /* ------------------------------------------------------ catch card on top */
   if (incoming && theirs && dismissed !== incoming.id) {
     return (
       <div className="scr">
@@ -256,6 +237,30 @@ export default function MeetPage() {
     );
   }
 
+  /* ------------------------------------------------------------- not armed */
+  if (!armed) {
+    return (
+      <div className="scr">
+        <div className="top">
+          <div className="nav">
+            <span className="pill">meet</span>
+          </div>
+          <div className="pad" style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', textAlign: 'center' }}>
+            {me && <Creature traits={me.traits} size={150} glow />}
+            <p className="d2">cast {me?.name ?? 'your familiar'} to the room</p>
+            <p className="mute body">Hold the phone out and wiggle it. Someone near you catches.</p>
+          </div>
+        </div>
+        <div className="bottom">
+          <button className="cta gold" type="button" onClick={() => void enter()}>
+            Enter casting mode
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------------------------------------ catch card on top */
   /* ---------------------------------------------------------- casting mode */
   return (
     <div className="scr">
@@ -289,7 +294,7 @@ export default function MeetPage() {
         </div>
       </div>
       <div className="bottom">
-        {!available && (
+        {(!available || permission !== 'granted') && (
           <button className="cta gold" type="button" onClick={onSpike}>
             Wiggle
           </button>
