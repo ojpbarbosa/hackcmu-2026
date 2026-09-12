@@ -66,12 +66,11 @@ export default function mock(input: { a?: ExchangeSide; b?: ExchangeSide }, seed
   ];
 
   const youBoth = shared ? `${shared}. go talk.` : pick(BOTH, seed);
-  const who = b.human ?? `${b.name ?? 'the other familiar'}'s human`;
-  const where = b.seat ? ` at ${b.seat}` : ' somewhere in this room';
 
-  return {
-    dialogue,
-    youBoth,
-    suggestion: `${who} is${where}. Go before the room empties.`,
-  };
+  // the same sentence lands on both phones, so it names neither of them
+  const suggestion = shared
+    ? `Start with ${shared}. Neither of you brings it up first otherwise.`
+    : `Put ${tag(a)} and ${tag(b)} in one sentence and see what happens.`;
+
+  return { dialogue, youBoth, suggestion };
 }

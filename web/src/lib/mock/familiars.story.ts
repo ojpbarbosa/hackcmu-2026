@@ -26,7 +26,7 @@ export default function mock(input: StoryInput) {
     : 'Nobody yet. The night is still young and the room is loud.';
 
   const callback = last
-    ? `${last.with} said "${(last.line ?? '').replace(/[."]+$/, '')}". You both landed on ${
+    ? `${last.with} said "${(last.line ?? '').replace(/"/g, '').replace(/[.]+$/, '')}". You both landed on ${
         (last.youBoth ?? 'the same thing').split('.')[0]
       }, and then the room moved.`
     : 'No exchange to call back to yet. Bump one phone and this card fills itself in.';

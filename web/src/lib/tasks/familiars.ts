@@ -17,8 +17,9 @@ export const familiarsPrompts = {
       'Write four lines alternating a, b, a, b. Each line is at most twelve words, spoken in character, ' +
       'dry and playful, and each references something from its human seeds. No exclamation marks, no emoji, ' +
       'no greetings, no names in the first line. Then write "youBoth": at most eight words naming the one thing ' +
-      'the two humans actually share, ending in a period. Then "suggestion": one sentence telling the humans what ' +
-      'to do next, naming b.human and where b is sitting (use the seat given in the input verbatim).',
+      'the two humans actually share, ending in a period. Then "suggestion": one sentence telling both humans what ' +
+      'to talk about first, built from their seeds. The same sentence is shown on both phones, so it must read the ' +
+      'same from either side: never name a person and never mention a seat, the app shows those itself.',
     outputShape: '{"dialogue":[{"who":"a"|"b","text":string}],"youBoth":string,"suggestion":string}',
     effort: 'low',
   },
