@@ -75,7 +75,12 @@ export default function NightPage() {
 
         <div className="row2" style={{ justifyContent: 'space-between' }}>
           <BodySm>
-            {written ? `Written by ${written.model} from tonight's graph` : 'Waiting for the chronicler'}
+            {/* the model is named only once the room's event log says which one answered */}
+            {written
+              ? `Written by ${written.model} from tonight's graph`
+              : story
+                ? "Written from tonight's graph"
+                : 'Waiting for the chronicler'}
             {written?.fallback ? <span className="badge-fb">fallback</span> : null}
           </BodySm>
           <span className="pill soft" style={{ height: 30, fontSize: 12 }}>

@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMember } from '@/hooks/useMember';
 import { useRoom } from '@/hooks/useRoom';
 import type { Familiar, FamState } from '@/lib/apps/familiars';
@@ -48,8 +48,6 @@ export function useFamiliars(): FamiliarsRoom {
     [member, state],
   );
 
-  const act = useCallback((name: string, payload?: unknown) => room.act(name, payload), [room]);
-
   return {
     code,
     member,
@@ -58,7 +56,9 @@ export function useFamiliars(): FamiliarsRoom {
     state,
     members: room.members,
     me,
-    act,
+    // useRoom's act is already stable; wrapping it would re-fire every effect
+    // that depends on it on every render
+    act: room.act,
     serverNow: room.serverNow,
     connected: room.connected,
     events: room.events,
