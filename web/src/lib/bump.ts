@@ -1,4 +1,4 @@
-import { makeId } from './ids';
+import { makeId, pairIdFor } from './ids';
 import { act } from './rooms';
 import { store } from './store';
 import { now } from './time';
@@ -34,16 +34,6 @@ type Result = { matched?: BumpMatch };
 
 const pendingKey = (app: AppName, code: string) => `bumps:${app}:${code.toUpperCase()}`;
 const resultKey = (bumpId: string) => `bump:${bumpId}`;
-
-function pairIdFor(a: string, b: string): string {
-  const [x, y] = [a, b].sort();
-  let h = 2166136261;
-  for (const ch of `${x}|${y}`) {
-    h ^= ch.charCodeAt(0);
-    h = Math.imul(h, 16777619) >>> 0;
-  }
-  return `pair_${h.toString(36)}`;
-}
 
 export async function recordBump(input: BumpInput): Promise<BumpResult> {
   const key = pendingKey(input.app, input.code);

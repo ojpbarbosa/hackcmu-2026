@@ -1,450 +1,538 @@
 import { z } from 'zod';
 import exchangeMock from '../mock/familiars.exchange';
-import { hash, makeId } from '../ids';
+import { traitsFor, nameFor, type Traits } from '../familiars/creature';
+import { runScout } from '../familiars/scout';
+import { hash, pairIdFor } from '../ids';
 import type { AppDef, Action, Ctx } from '../rooms';
 
-/** Familiars — a small persona per person, hatched from three answers. Two phones
- *  bump, the familiars talk for ten seconds, and both humans get one line worth
- *  saying out loud. Owned by the familiars agent. */
+/** Familiars v2 — one familiar per person, hatched from a spoken introduction.
+ *  Arm, wiggle, catch: two familiars talk, both humans get one line worth saying
+ *  out loud. Owned by the familiars agent. */
+
+export type Pronouns = 'he/him' | 'she/her' | 'they/them' | string;
+export type { Traits };
+export type Species = Traits['species'];
 
 export type Familiar = {
   id: string;
   name: string;
-  /** three characters, unique in the room: the fallback way to meet someone */
-  address: string;
-  aura: [string, string];
-  seeds: [string, string, string];
+  human: { name: string; pronouns: Pronouns };
+  transcript: string;
   keywords: string[];
-  human: { name: string; seat: string };
-  clusterId: string | null;
+  clusterLabel: string;
+  greeting: string;
+  traits: Traits;
+  voice: number;
   createdAt: number;
   demo?: boolean;
 };
 
-export type Bump = {
-  /** the pairId from /api/bump, so the same pair is never written twice */
+export type Pair = {
   id: string;
   a: string;
   b: string;
   at: number;
-  dialogue: { who: 'a' | 'b'; text: string }[];
+  lines: { who: 'a' | 'b'; text: string }[];
   youBoth: string;
-  suggestion: string;
+  say: string;
+  talked?: boolean;
 };
 
-export type Cluster = { id: string; label: string; color: string; members: string[] };
-
-export type Story = { cards: { label: string; big?: string; text: string }[]; at: number };
+export type Card = {
+  id: string;
+  title: string;
+  whenISO: string | null;
+  where: string;
+  cost: string;
+  kind: 'listed_event' | 'self_organized';
+  source?: string;
+  cached?: boolean;
+  why: string;
+  image?: string;
+};
 
 export type FamState = {
   code: string;
   familiars: Record<string, Familiar>;
-  bumps: Bump[];
-  clusters: Cluster[];
-  stories: Record<string, Story>;
+  casting: Record<string, { armedAt: number }>;
+  pendingCasts: { id: string; from: string; at: number }[];
+  pairs: Pair[];
+  intros: Record<string, { to: string; via: string; line: string; at: number }>;
+  scout: {
+    brief: string;
+    status: string[];
+    cards: Card[];
+    swipes: Record<string, Record<string, 'in' | 'out'>>;
+    match: string | null;
+    startedAt: number;
+  } | null;
+  cast: { question: string; hook: string; at: number; answers: Record<string, string> } | null;
+  recaps: Record<string, { cards: { label: string; big?: string; text: string }[]; at: number }>;
 };
 
-/* ------------------------------------------------------------------ palettes */
+export const CAST_TTL_MS = 8000;
+const ARM_TTL_MS = 10 * 60 * 1000;
+const SCOUT_COOLDOWN_MS = 60_000;
+const NAME_OK = /^[A-Z][a-z]{2,11}$/;
 
-/** Eight cluster colours, first four straight from the mockup legend. */
-export const CLUSTER_COLORS = ['#10B981', '#6366F1', '#F472B6', '#F59E0B', '#38BDF8', '#A78BFA', '#FB7185', '#2DD4BF'];
-
-/** Aura = [mid, deep]; the orb builds its four gradient stops from the pair. */
-const AURAS: [string, string][] = [
-  ['#6EE7B7', '#10B981'],
-  ['#A5B4FC', '#6366F1'],
-  ['#F9A8D4', '#EC4899'],
-  ['#FCD34D', '#F59E0B'],
-  ['#7DD3FC', '#0EA5E9'],
-  ['#C4B5FD', '#8B5CF6'],
-  ['#FDA4AF', '#F43F5E'],
-  ['#5EEAD4', '#14B8A6'],
-];
-
-const ADDRESS_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-export function auraFor(seed: string): [string, string] {
-  return AURAS[hash(seed) % AURAS.length];
+function initial(code: string): FamState {
+  return {
+    code,
+    familiars: {},
+    casting: {},
+    pendingCasts: [],
+    pairs: [],
+    intros: {},
+    scout: null,
+    cast: null,
+    recaps: {},
+  };
 }
 
-/** Three characters from A-Z2-9, derived from the member id and nudged on collision. */
-export function addressFor(seed: string, taken: Set<string>): string {
-  const h = hash(seed);
-  for (let attempt = 0; attempt < 64; attempt++) {
-    const n = h + attempt * 7919;
-    const a = ADDRESS_ALPHABET[(n >>> 0) % ADDRESS_ALPHABET.length];
-    const b = ADDRESS_ALPHABET[((n / 32) >>> 0) % ADDRESS_ALPHABET.length];
-    const c = ADDRESS_ALPHABET[((n / 1024) >>> 0) % ADDRESS_ALPHABET.length];
-    const code = `${a}${b}${c}`;
-    if (!taken.has(code)) return code;
-  }
-  return `${ADDRESS_ALPHABET[h % 32]}${ADDRESS_ALPHABET[(h >>> 5) % 32]}${ADDRESS_ALPHABET[(h >>> 10) % 32]}`;
-}
+/* ----------------------------------------------------------------- selectors */
 
-/* ------------------------------------------------------------------ matching */
-
-const norm = (s: string) => s.toLowerCase().trim();
-
-/** Jaccard over keywords, plus a bonus for sharing a cluster. 0..1. */
-export function matchScore(a: Familiar, b: Familiar): number {
-  const ka = new Set(a.keywords.map(norm).filter(Boolean));
-  const kb = new Set(b.keywords.map(norm).filter(Boolean));
-  const shared = [...ka].filter((k) => kb.has(k)).length;
-  const union = new Set([...ka, ...kb]).size;
-  const jaccard = union ? shared / union : 0;
-  const bonus = a.clusterId && a.clusterId === b.clusterId ? 0.15 : 0;
-  return Math.min(1, jaccard + bonus);
-}
-
-export function sharedKeywords(a: Familiar, b: Familiar): string[] {
-  const kb = new Set(b.keywords.map(norm));
-  return a.keywords.filter((k) => kb.has(norm(k)));
-}
-
-export function bumpedIds(state: FamState, meId: string): Set<string> {
+/** Everyone I have actually met (either side of a pair). */
+export function metIds(state: FamState, me: string): Set<string> {
   const out = new Set<string>();
-  for (const bump of state.bumps) {
-    if (bump.a === meId) out.add(bump.b);
-    if (bump.b === meId) out.add(bump.a);
+  for (const p of state.pairs) {
+    if (p.a === me) out.add(p.b);
+    else if (p.b === me) out.add(p.a);
   }
   return out;
 }
 
-/** The closest person you never bumped. */
-export function gotAway(state: FamState, meId: string): { id: string; score: number } | null {
-  const me = state.familiars[meId];
-  if (!me) return null;
-  const met = bumpedIds(state, meId);
-  let best: { id: string; score: number } | null = null;
-  for (const other of Object.values(state.familiars)) {
-    if (other.id === meId || met.has(other.id)) continue;
-    const score = matchScore(me, other);
-    if (!best || score > best.score || (score === best.score && other.id < best.id)) best = { id: other.id, score };
-  }
-  return best;
+export function sharedKeywords(a: Familiar, b: Familiar): string[] {
+  const set = new Set((b.keywords ?? []).map((k) => k.toLowerCase()));
+  return (a.keywords ?? []).filter((k) => set.has(k.toLowerCase()));
 }
 
-export function statsFor(state: FamState, meId: string): { contacts: number; bumps: number; clusters: number } {
-  const met = bumpedIds(state, meId);
-  const clusters = new Set<string>();
-  for (const id of met) {
-    const c = state.familiars[id]?.clusterId;
-    if (c) clusters.add(c);
+/** The people I met, grouped by the strongest keyword each of us shares with me. */
+export function webGroups(state: FamState, me: string): { label: string; members: string[] }[] {
+  const mine = state.familiars[me];
+  if (!mine) return [];
+  const groups = new Map<string, string[]>();
+  for (const id of metIds(state, me)) {
+    const them = state.familiars[id];
+    if (!them) continue;
+    const shared = sharedKeywords(mine, them);
+    const label = shared[0] ?? them.clusterLabel ?? 'the long way round';
+    groups.set(label, [...(groups.get(label) ?? []), id]);
   }
-  const me = state.familiars[meId]?.clusterId;
-  if (me) clusters.add(me);
-  return {
-    contacts: met.size,
-    bumps: state.bumps.filter((b) => b.a === meId || b.b === meId).length,
-    clusters: clusters.size,
-  };
+  return [...groups.entries()]
+    .map(([label, members]) => ({ label, members }))
+    .sort((x, y) => y.members.length - x.members.length);
 }
 
-/* ------------------------------------------------------------------ schemas */
+/** Paired with someone I paired with, but not with me. */
+export function friendsOfFriends(state: FamState, me: string): string[] {
+  const met = metIds(state, me);
+  const out = new Set<string>();
+  for (const p of state.pairs) {
+    const inA = met.has(p.a);
+    const inB = met.has(p.b);
+    if (inA && !met.has(p.b) && p.b !== me) out.add(p.b);
+    if (inB && !met.has(p.a) && p.a !== me) out.add(p.a);
+  }
+  return [...out];
+}
 
-const HatchOut = z.object({
-  name: z.string().min(1).max(24),
+/** Hatched people I have not met, most shared keywords first, with a mutual
+ *  friend who could make the introduction when there is one. */
+export function keepMissing(state: FamState, me: string): { id: string; shared: string[]; via: string | null }[] {
+  const mine = state.familiars[me];
+  if (!mine) return [];
+  const met = metIds(state, me);
+  const rows = Object.values(state.familiars)
+    .filter((f) => f.id !== me && !met.has(f.id))
+    .map((f) => ({ id: f.id, shared: sharedKeywords(mine, f), via: viaFor(state, me, f.id) }))
+    .sort((a, b) => b.shared.length - a.shared.length);
+  return rows.slice(0, 5);
+}
+
+export function activeCasts(state: FamState, now: number): FamState['pendingCasts'] {
+  return state.pendingCasts.filter((c) => now - c.at < CAST_TTL_MS);
+}
+
+/** The card every hatched, non-demo member swiped in on. */
+export function isMatch(state: FamState): Card | null {
+  const s = state.scout;
+  if (!s) return null;
+  if (s.match) return s.cards.find((c) => c.id === s.match) ?? null;
+  return null;
+}
+
+function realMembers(state: FamState): string[] {
+  return Object.values(state.familiars)
+    .filter((f) => !f.demo)
+    .map((f) => f.id);
+}
+
+/** Who could introduce me to `them`: someone paired with both of us, else the
+ *  person paired with them who shares the most keywords with me. */
+function viaFor(state: FamState, me: string, them: string): string | null {
+  const myMet = metIds(state, me);
+  const theirMet = metIds(state, them);
+  const both = [...myMet].filter((id) => theirMet.has(id));
+  if (both.length) return both[0];
+  const mine = state.familiars[me];
+  if (!mine) return null;
+  let best: { id: string; n: number } | null = null;
+  for (const id of theirMet) {
+    const f = state.familiars[id];
+    if (!f || id === me) continue;
+    const n = sharedKeywords(mine, f).length;
+    if (!best || n > best.n) best = { id, n };
+  }
+  return best?.id ?? null;
+}
+
+/* ------------------------------------------------------------------- schemas */
+
+export const HatchOut = z.object({
+  humanName: z.string().min(0).max(24),
+  pronouns: z.string().max(16),
+  familiarName: z.string().max(24),
   keywords: z.array(z.string()).min(1).max(8),
-  clusterLabel: z.string().min(1).max(40),
+  clusterLabel: z.string().max(40),
+  greeting: z.string().max(140),
 });
 
 const ExchangeOut = z.object({
-  dialogue: z.array(z.object({ who: z.string().optional(), text: z.string().min(1) })).min(2).max(8),
-  youBoth: z.string().min(1),
-  suggestion: z.string().min(1),
+  lines: z.array(z.object({ who: z.enum(['a', 'b']), text: z.string() })).min(1),
+  youBoth: z.string(),
+  say: z.string(),
 });
 
-const StoryOut = z.object({
-  cards: z.array(z.object({ label: z.string(), big: z.string().optional(), text: z.string() })).min(1).max(4),
+const IntroOut = z.object({ line: z.string().min(1).max(200) });
+
+const RecapOut = z.object({
+  cards: z.array(z.object({ label: z.string(), big: z.string().optional(), text: z.string() })).min(1),
 });
 
-type ExchangeData = z.infer<typeof ExchangeOut>;
+const CastOut = z.object({ question: z.string().max(120), hook: z.string().max(120) });
 
-/** Four alternating lines, whatever the model called them. */
-function toDialogue(raw: ExchangeData['dialogue']): { who: 'a' | 'b'; text: string }[] {
-  return raw.slice(0, 4).map((line, i) => ({ who: (i % 2 === 0 ? 'a' : 'b') as 'a' | 'b', text: line.text.trim() }));
+/* -------------------------------------------------------------------- helpers */
+
+function prune(state: FamState, now: number): FamState {
+  const pendingCasts = state.pendingCasts.filter((c) => now - c.at < CAST_TTL_MS);
+  const casting: FamState['casting'] = {};
+  for (const [id, v] of Object.entries(state.casting)) {
+    if (now - v.armedAt < ARM_TTL_MS) casting[id] = v;
+  }
+  const samePending = pendingCasts.length === state.pendingCasts.length;
+  const sameCasting = Object.keys(casting).length === Object.keys(state.casting).length;
+  if (samePending && sameCasting) return state;
+  return { ...state, pendingCasts, casting };
 }
 
-/* ------------------------------------------------------------------ clusters */
-
-function upsertCluster(clusters: Cluster[], label: string, memberId: string): Cluster[] {
-  const want = norm(label).slice(0, 40) || 'the room';
-  const next = clusters.map((c) => ({ ...c, members: [...c.members] }));
-  let hit = next.find((c) => norm(c.label) === want);
-  if (!hit && next.length >= CLUSTER_COLORS.length) {
-    // the room is full: join the cluster that shares a word, else the smallest one
-    const words = new Set(want.split(/\s+/));
-    hit =
-      next.find((c) => norm(c.label).split(/\s+/).some((w) => words.has(w))) ??
-      [...next].sort((x, y) => x.members.length - y.members.length)[0];
-  }
-  if (!hit) {
-    hit = { id: `cl_${want.replace(/[^a-z0-9]+/g, '_')}`, label: want, color: CLUSTER_COLORS[next.length], members: [] };
-    next.push(hit);
-  }
-  for (const c of next) c.members = c.members.filter((m) => m !== memberId);
-  hit.members.push(memberId);
-  return next;
+function takenNames(state: FamState): Set<string> {
+  return new Set(Object.values(state.familiars).map((f) => f.name));
 }
 
-/* ------------------------------------------------------------------ demo seed */
+function circleKeywords(state: FamState): string[] {
+  const counts = new Map<string, number>();
+  for (const f of Object.values(state.familiars)) {
+    for (const k of f.keywords ?? []) counts.set(k.toLowerCase(), (counts.get(k.toLowerCase()) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k).slice(0, 8);
+}
+
+const side = (f: Familiar) => ({
+  name: f.name,
+  human: f.human.name,
+  pronouns: f.human.pronouns,
+  keywords: f.keywords,
+  transcript: (f.transcript ?? '').slice(0, 240),
+});
+
+function makePair(id: string, a: Familiar, b: Familiar, at: number, raw: z.infer<typeof ExchangeOut>): Pair {
+  const lines = raw.lines.slice(0, 4).map((l, i) => ({ who: (i % 2 === 0 ? 'a' : 'b') as 'a' | 'b', text: l.text }));
+  return { id, a: a.id, b: b.id, at, lines, youBoth: raw.youBoth, say: raw.say };
+}
+
+/* ------------------------------------------------------------------ seed demo */
 
 const ARCHETYPES = [
-  { build: 'I build modular synths at 3 am', cluster: 'modular synths', kw: ['synths', 'eurorack', 'tape loops', 'solder', 'night'] },
-  { build: 'I write shaders nobody asked for', cluster: 'graphics', kw: ['shaders', 'raymarching', 'glsl', 'demoscene', 'pixels'] },
-  { build: 'I run a wet lab protocol twice a week', cluster: 'wet lab', kw: ['pipettes', 'protocol', 'agar', 'microscope', 'patience'] },
-  { build: 'I weld frames for a solar car', cluster: 'solar car', kw: ['welding', 'frames', 'aero', 'battery', 'garage'] },
-  { build: 'I cut 16mm film in a closet', cluster: 'film', kw: ['16mm', 'splices', 'grain', 'darkroom', 'archives'] },
-  { build: 'I cook for eight and eat alone', cluster: 'kitchen', kw: ['braises', 'sourdough', 'knives', 'markets', 'feeding people'] },
-  { build: 'I keep a compiler in a notebook', cluster: 'compilers', kw: ['parsers', 'types', 'bytecode', 'notebooks', 'small languages'] },
-  { build: 'I map storm drains on weekends', cluster: 'field notes', kw: ['maps', 'drains', 'walking', 'surveys', 'rain'] },
+  { transcript: "I'm here building modular synths at 3 am", cluster: 'modular synths', kw: ['synths', 'eurorack', 'tape loops', 'solder', 'night'] },
+  { transcript: 'I write shaders nobody asked for', cluster: 'graphics', kw: ['shaders', 'raymarching', 'glsl', 'demoscene', 'pixels'] },
+  { transcript: 'I run a wet lab protocol twice a week', cluster: 'wet lab', kw: ['pipettes', 'protocol', 'agar', 'microscope', 'patience'] },
+  { transcript: 'I weld frames for a solar car', cluster: 'solar car', kw: ['welding', 'frames', 'aero', 'battery', 'garage'] },
+  { transcript: 'I cut 16mm film in a closet', cluster: 'film', kw: ['16mm', 'splices', 'grain', 'darkroom', 'archives'] },
+  { transcript: 'I cook for eight and eat alone', cluster: 'kitchen', kw: ['braises', 'sourdough', 'knives', 'markets', 'feeding people'] },
+  { transcript: 'I keep a compiler in a notebook', cluster: 'compilers', kw: ['parsers', 'types', 'bytecode', 'notebooks', 'small languages'] },
+  { transcript: 'I map storm drains on weekends', cluster: 'field notes', kw: ['maps', 'drains', 'walking', 'surveys', 'rain'] },
 ];
 
-const DEMO_ANIMALS = [
-  'moth', 'kestrel', 'heron', 'vole', 'marten', 'swift', 'pike', 'wren', 'otter', 'shrike',
-  'lynx', 'grebe', 'newt', 'ibis', 'stoat', 'tern', 'crane', 'hare', 'finch', 'adder',
-  'raven', 'perch', 'dunlin', 'sable', 'egret', 'pika', 'merlin', 'chub', 'plover', 'weasel',
-  'osprey', 'skink', 'gannet', 'roach', 'mink', 'snipe', 'bittern', 'gecko', 'jackdaw', 'loach',
-];
-
-const DEMO_HUMANS = [
-  'Ana', 'Devon', 'Priya', 'Malik', 'Sofia', 'Wren', 'Tomás', 'Yuki', 'Nadia', 'Owen',
-  'Ife', 'Lucas', 'Mira', 'Bo', 'Rania', 'Jonas', 'Chen', 'Alba', 'Kofi', 'Theo',
-  'Noor', 'Ravi', 'Elif', 'Sam', 'Iris', 'Dario', 'Maya', 'Kai', 'Lena', 'Hugo',
-  'Ada', 'Nico', 'Zara', 'Paulo', 'Ines', 'Otto', 'Rosa', 'Emeka', 'June', 'Milo',
-];
-
+const DEMO_HUMANS = ['Ana', 'Devon', 'Priya', 'Malik', 'Sofia', 'Wren', 'Tomás', 'Yuki', 'Nadia', 'Owen', 'Ife', 'Lucas'];
 const DEMO_CITIES = ['Recife', 'Lagos', 'Seoul', 'Tbilisi', 'Porto', 'Chennai', 'Kraków', 'Quito', 'Osaka', 'Lima', 'Nairobi', 'Belgrade'];
-const DEMO_TRUTHS = [
-  'Night owl, obviously',
-  'I have never finished a book on the first try',
-  'I walk the long way home',
-  'I read menus for fun',
-  'I still have my first keyboard',
-  'I talk to the machines',
-  'I have not slept since Thursday',
-  'I keep every ticket stub',
-];
-const DEMO_SEATS = [
-  '2nd floor, by the windows',
-  'Tepper atrium, near the coffee',
-  'ground floor, under the stairs',
-  '3rd floor, the loud table',
-  'by the whiteboard wall',
-  'back row, next to the plug',
-  'the couches by the door',
-  'mezzanine, left side',
+const PRONOUN_CYCLE: Pronouns[] = ['he/him', 'she/her', 'they/them'];
+const GREETINGS = [
+  'Mine has not slept since Thursday and is proud of it.',
+  'We came for the thing in the bag.',
+  'There is a half-finished one at home, still humming.',
 ];
 
 function demoFamiliar(i: number, at: number, taken: Set<string>): Familiar {
   const arch = ARCHETYPES[i % ARCHETYPES.length];
   const id = `demo_${i}`;
   const city = DEMO_CITIES[(i * 5) % DEMO_CITIES.length];
-  const address = addressFor(`demo-${i}`, taken);
-  taken.add(address);
+  const name = nameFor(id, taken);
+  taken.add(name);
+  const traits = traitsFor(id);
   return {
     id,
-    name: DEMO_ANIMALS[i % DEMO_ANIMALS.length],
-    address,
-    aura: auraFor(id),
-    seeds: [arch.build, `${city}, then Pittsburgh`, DEMO_TRUTHS[(i * 3) % DEMO_TRUTHS.length]],
+    name,
+    human: { name: DEMO_HUMANS[i % DEMO_HUMANS.length], pronouns: PRONOUN_CYCLE[i % 3] },
+    transcript: `${arch.transcript}. From ${city}, then Pittsburgh.`,
     keywords: [...arch.kw.slice(0, 4), city.toLowerCase()],
-    human: { name: DEMO_HUMANS[i % DEMO_HUMANS.length], seat: DEMO_SEATS[(i * 3) % DEMO_SEATS.length] },
-    clusterId: null,
+    clusterLabel: arch.cluster,
+    greeting: GREETINGS[i % GREETINGS.length],
+    traits,
+    voice: traits.hue,
     createdAt: at - (40 - i) * 60_000,
     demo: true,
   };
 }
 
-/** Synthetic villagers so the stage is a village and not three dots. Authored
- *  content, generated locally: no model call, so the ladder stays honest. */
+function pairLocally(state: FamState, a: Familiar, b: Familiar, at: number): Pair | null {
+  const id = pairIdFor(a.id, b.id);
+  if (state.pairs.some((p) => p.id === id)) return null;
+  const raw = exchangeMock({ a: side(a), b: side(b) }, hash(`${a.id}:${b.id}`)) as z.infer<typeof ExchangeOut>;
+  return makePair(id, a, b, at, raw);
+}
+
+/** Authored villagers so the web is a web and not one dot. No model call, so the
+ *  ladder stays honest. */
 function seedDemo(state: FamState, n: number, at: number): FamState {
-  const count = Object.keys(state.familiars).length;
-  if (count >= 20) return state;
-  const wanted = Math.max(0, Math.min(40, Math.round(n)));
-  const taken = new Set(Object.values(state.familiars).map((f) => f.address));
+  const wanted = Math.max(0, Math.min(12, Math.round(n || 8)));
+  const taken = takenNames(state);
   const familiars = { ...state.familiars };
-  let clusters = state.clusters;
   const added: Familiar[] = [];
   for (let i = 0; i < wanted; i++) {
     if (familiars[`demo_${i}`]) continue;
     const f = demoFamiliar(i, at, taken);
-    clusters = upsertCluster(clusters, ARCHETYPES[i % ARCHETYPES.length].cluster, f.id);
-    f.clusterId = clusters.find((c) => c.members.includes(f.id))?.id ?? null;
     familiars[f.id] = f;
     added.push(f);
   }
-  const bumps = [...state.bumps];
-  const pairCount = Math.round(added.length * 0.6);
-  for (let i = 0; i < pairCount; i++) {
-    const a = added[i % added.length];
-    // two in three meetings happen inside a scene (the archetypes cycle every 8),
-    // the rest cross the room
-    const b = added[(i % 3 === 2 ? i * 3 + 1 : i + ARCHETYPES.length) % added.length];
-    if (!a || !b || a.id === b.id) continue;
-    if (bumps.some((x) => (x.a === a.id && x.b === b.id) || (x.a === b.id && x.b === a.id))) continue;
-    const raw = exchangeMock(
-      {
-        a: { name: a.name, seeds: a.seeds, keywords: a.keywords, human: a.human.name, seat: a.human.seat },
-        b: { name: b.name, seeds: b.seeds, keywords: b.keywords, human: b.human.name, seat: b.human.seat },
-      },
-      hash(`${a.id}:${b.id}`),
-    );
-    bumps.push({
-      id: `demo_pair_${i}`,
-      a: a.id,
-      b: b.id,
-      at: at - (pairCount - i) * 45_000,
-      dialogue: toDialogue(raw.dialogue),
-      youBoth: raw.youBoth,
-      suggestion: raw.suggestion,
-    });
-  }
-  return { ...state, familiars, clusters, bumps };
-}
+  if (!added.length) return state;
 
-/* ------------------------------------------------------------------ reducer */
-
-async function makeBump(
-  state: FamState,
-  ctx: Ctx,
-  pairId: string,
-  aId: string,
-  bId: string,
-  at: number,
-): Promise<FamState> {
-  if (state.bumps.some((b) => b.id === pairId)) return state;
-  const a = state.familiars[aId];
-  const b = state.familiars[bId];
-  if (!a || !b || a.id === b.id) return state;
-
-  const { data } = await ctx.llm.json(
-    'familiars.exchange',
-    {
-      a: { name: a.name, seeds: a.seeds, keywords: a.keywords, human: a.human.name, seat: a.human.seat },
-      b: { name: b.name, seeds: b.seeds, keywords: b.keywords, human: b.human.name, seat: b.human.seat },
-    },
-    { app: 'familiars', code: ctx.code, schema: ExchangeOut },
-  );
-
-  const bump: Bump = {
-    id: pairId,
-    a: a.id,
-    b: b.id,
-    at,
-    dialogue: toDialogue(data.dialogue),
-    youBoth: data.youBoth.trim(),
-    suggestion: data.suggestion.trim(),
+  const next: FamState = { ...state, familiars };
+  const pairs = [...state.pairs];
+  const push = (a?: Familiar, b?: Familiar) => {
+    if (!a || !b || a.id === b.id) return;
+    const p = pairLocally({ ...next, pairs }, a, b, at);
+    if (p) pairs.push(p);
   };
-  return { ...state, bumps: [...state.bumps, bump] };
+
+  const count = Math.round(added.length * 0.6);
+  for (let i = 0; i < count; i++) {
+    push(added[i % added.length], added[(i % 3 === 2 ? i * 3 + 1 : i + 3) % added.length]);
+  }
+
+  // a real person is here: hang four demos off them so the web has a centre
+  const real = Object.values(familiars).find((f) => !f.demo);
+  if (real) for (let i = 0; i < 4; i++) push(familiars[`demo_${i}`], real);
+
+  return { ...next, pairs };
 }
 
-async function reduce(state: FamState, action: Action, ctx: Ctx): Promise<FamState> {
-  const at = action.now;
+/* -------------------------------------------------------------------- reduce */
+
+async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamState> {
+  const state = prune(prev, action.now);
+  const me = action.memberId;
+  const p = action.payload ?? {};
 
   switch (action.name) {
     case 'hatch': {
-      const payload = (action.payload ?? {}) as { seeds?: string[]; human?: { name?: string; seat?: string } };
-      const seeds = (payload.seeds ?? []).map((s) => String(s).trim()).filter(Boolean);
-      if (seeds.length < 3) return state;
-      if (state.familiars[action.memberId]) return state;
-
-      const human = {
-        name: (payload.human?.name ?? ctx.members[action.memberId]?.name ?? 'someone').trim(),
-        seat: (payload.human?.seat ?? ctx.members[action.memberId]?.seat ?? '').trim(),
-      };
-
-      const { data } = await ctx.llm.json(
-        'familiars.hatch',
-        { seeds, human: { name: human.name } },
-        { app: 'familiars', code: ctx.code, schema: HatchOut },
-      );
-
-      const taken = new Set(Object.values(state.familiars).map((f) => f.address));
+      if (state.familiars[me]) return state;
+      const transcript = String(p.transcript ?? '').trim();
+      if (transcript.length < 12) return state;
+      const taken = takenNames(state);
+      const suggestedName = nameFor(me, taken);
+      const { data } = await ctx.llm.json('familiars.hatch', { transcript, suggestedName }, {
+        app: ctx.app,
+        code: ctx.code,
+        schema: HatchOut,
+        effort: 'low',
+        maxTokens: 320,
+      });
+      const proposed = (data.familiarName ?? '').trim();
+      const name = NAME_OK.test(proposed) && !taken.has(proposed) ? proposed : suggestedName;
+      const traits = traitsFor(me);
       const familiar: Familiar = {
-        id: action.memberId,
-        name: norm(data.name).replace(/[^a-z0-9-]/g, '').slice(0, 16) || 'moth',
-        address: addressFor(action.memberId, taken),
-        aura: auraFor(action.memberId),
-        seeds: [seeds[0], seeds[1], seeds[2]],
-        keywords: [...new Set(data.keywords.map(norm).filter(Boolean))].slice(0, 5),
-        human,
-        clusterId: null,
-        createdAt: at,
-      };
-      const clusters = upsertCluster(state.clusters, data.clusterLabel, familiar.id);
-      familiar.clusterId = clusters.find((c) => c.members.includes(familiar.id))?.id ?? null;
-      return { ...state, familiars: { ...state.familiars, [familiar.id]: familiar }, clusters };
-    }
-
-    case 'bumpPaired': {
-      const p = (action.payload ?? {}) as { pairId?: string; a?: string; b?: string };
-      if (!p.pairId || !p.a || !p.b) return state;
-      return makeBump(state, ctx, p.pairId, p.a, p.b, at);
-    }
-
-    case 'bumpByAddress': {
-      const p = (action.payload ?? {}) as { address?: string };
-      const address = String(p.address ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-      const other = Object.values(state.familiars).find((f) => f.address === address);
-      if (!other || other.id === action.memberId) return state;
-      const existing = state.bumps.find(
-        (b) =>
-          (b.a === action.memberId && b.b === other.id) || (b.b === action.memberId && b.a === other.id),
-      );
-      if (existing) return state;
-      return makeBump(state, ctx, makeId('pair'), action.memberId, other.id, at);
-    }
-
-    case 'story': {
-      const me = state.familiars[action.memberId];
-      if (!me) return state;
-      const mine = state.bumps.filter((b) => b.a === me.id || b.b === me.id);
-      const away = gotAway(state, me.id);
-      const awayF = away ? state.familiars[away.id] : null;
-      const { data } = await ctx.llm.json(
-        'familiars.story',
-        {
-          me: { name: me.name, human: me.human.name, seeds: me.seeds, keywords: me.keywords },
-          bumps: mine.map((b) => {
-            const otherId = b.a === me.id ? b.b : b.a;
-            const other = state.familiars[otherId];
-            const theirSide = b.a === me.id ? 'b' : 'a';
-            const theirLines = b.dialogue.filter((d) => d.who === theirSide);
-            return {
-              with: other?.name ?? 'someone',
-              youBoth: b.youBoth,
-              line: theirLines[theirLines.length - 1]?.text ?? '',
-            };
-          }),
-          clusters: state.clusters.map((c) => ({ label: c.label, size: c.members.length, mine: c.id === me.clusterId })),
-          roomSize: Object.keys(state.familiars).length,
-          gotAway:
-            away && awayF
-              ? {
-                  score: Math.round(away.score * 100),
-                  shared: sharedKeywords(me, awayF),
-                  cluster: state.clusters.find((c) => c.id === awayF.clusterId)?.label ?? '',
-                }
-              : null,
+        id: me,
+        name,
+        human: {
+          name: data.humanName.trim() || ctx.members[me]?.name || 'someone',
+          pronouns: data.pronouns.trim() || 'they/them',
         },
-        { app: 'familiars', code: ctx.code, schema: StoryOut },
-      );
-      const cards = data.cards.slice(0, 3).map((c) => ({ label: norm(c.label), big: c.big || undefined, text: c.text.trim() }));
-      return { ...state, stories: { ...state.stories, [me.id]: { cards, at } } };
+        transcript,
+        keywords: data.keywords.map((k) => k.toLowerCase().trim()).filter(Boolean).slice(0, 5),
+        clusterLabel: data.clusterLabel.trim(),
+        greeting: data.greeting.trim(),
+        traits,
+        voice: traits.hue,
+        createdAt: action.now,
+      };
+      const member = ctx.members[me];
+      if (member) member.name = familiar.human.name;
+      return { ...state, familiars: { ...state.familiars, [me]: familiar } };
     }
 
-    case 'seedDemo': {
-      const p = (action.payload ?? {}) as { n?: number };
-      return seedDemo(state, Number(p.n ?? 40), at);
+    case 'arm': {
+      if (!state.familiars[me]) return state;
+      return { ...state, casting: { ...state.casting, [me]: { armedAt: action.now } } };
     }
+
+    case 'disarm': {
+      if (!state.casting[me]) return state;
+      const casting = { ...state.casting };
+      delete casting[me];
+      return { ...state, casting, pendingCasts: state.pendingCasts.filter((c) => c.from !== me) };
+    }
+
+    case 'wiggle': {
+      if (!state.casting[me] || !state.familiars[me]) return state;
+      const pendingCasts = state.pendingCasts.filter((c) => c.from !== me);
+      pendingCasts.push({ id: `cast_${me}_${action.now}`, from: me, at: action.now });
+      return { ...state, pendingCasts };
+    }
+
+    case 'catch': {
+      const cast = state.pendingCasts.find((c) => c.id === String(p.castId ?? ''));
+      if (!cast || cast.from === me) return state;
+      if (action.now - cast.at >= CAST_TTL_MS) return state;
+      const a = state.familiars[cast.from];
+      const b = state.familiars[me];
+      if (!a || !b) return state;
+      const id = pairIdFor(a.id, b.id);
+      const pendingCasts = state.pendingCasts.filter((c) => c.id !== cast.id);
+      const casting = { ...state.casting };
+      delete casting[a.id];
+      delete casting[b.id];
+      if (state.pairs.some((x) => x.id === id)) return { ...state, pendingCasts, casting };
+      const { data } = await ctx.llm.json('familiars.exchange', { a: side(a), b: side(b) }, {
+        app: ctx.app,
+        code: ctx.code,
+        schema: ExchangeOut,
+        effort: 'low',
+        maxTokens: 400,
+      });
+      return { ...state, pendingCasts, casting, pairs: [...state.pairs, makePair(id, a, b, action.now, data)] };
+    }
+
+    case 'talked': {
+      const id = String(p.pairId ?? '');
+      if (!state.pairs.some((x) => x.id === id && !x.talked)) return state;
+      return { ...state, pairs: state.pairs.map((x) => (x.id === id ? { ...x, talked: true } : x)) };
+    }
+
+    case 'askIntro': {
+      const to = String(p.to ?? '');
+      const mine = state.familiars[me];
+      const them = state.familiars[to];
+      if (!mine || !them || to === me) return state;
+      const key = `${me}:${to}`;
+      if (state.intros[key]) return state;
+      const viaId = viaFor(state, me, to);
+      const via = viaId ? state.familiars[viaId] : null;
+      const shared = sharedKeywords(mine, them);
+      const { data } = await ctx.llm.json(
+        'familiars.intro',
+        {
+          me: mine.human.name,
+          them: them.human.name,
+          via: via?.name ?? mine.name,
+          pronouns: { me: mine.human.pronouns, them: them.human.pronouns },
+          shared,
+        },
+        { app: ctx.app, code: ctx.code, schema: IntroOut, effort: 'low', maxTokens: 200 },
+      );
+      return {
+        ...state,
+        intros: { ...state.intros, [key]: { to, via: viaId ?? me, line: data.line.trim(), at: action.now } },
+      };
+    }
+
+    case 'scout': {
+      if (state.scout && action.now - state.scout.startedAt < SCOUT_COOLDOWN_MS) return state;
+      const keywords = circleKeywords(state);
+      const brief = String(p.brief ?? '').trim() || keywords.join(', ');
+      const started: FamState = {
+        ...state,
+        scout: { brief, status: [], cards: [], swipes: {}, match: null, startedAt: action.now },
+      };
+      const out = await runScout(brief, { keywords }, ctx.llm, { app: 'familiars', code: ctx.code });
+      return { ...started, scout: { ...started.scout!, status: out.status, cards: out.cards } };
+    }
+
+    case 'swipe': {
+      const s = state.scout;
+      const cardId = String(p.cardId ?? '');
+      const dir = p.dir === 'out' ? 'out' : 'in';
+      if (!s || !s.cards.some((c) => c.id === cardId) || !state.familiars[me]) return state;
+      const swipes = { ...s.swipes, [cardId]: { ...(s.swipes[cardId] ?? {}), [me]: dir as 'in' | 'out' } };
+      let match = s.match;
+      if (!match) {
+        const voters = realMembers(state);
+        for (const c of s.cards) {
+          const votes = swipes[c.id] ?? {};
+          if (voters.length && voters.every((id) => votes[id] === 'in')) {
+            match = c.id;
+            break;
+          }
+        }
+      }
+      return { ...state, scout: { ...s, swipes, match } };
+    }
+
+    case 'castNow': {
+      const keywords = circleKeywords(state);
+      const { data } = await ctx.llm.json('casts.prompt', { keywords, size: Object.keys(state.familiars).length }, {
+        app: ctx.app,
+        code: ctx.code,
+        schema: CastOut,
+        effort: 'low',
+        maxTokens: 200,
+      });
+      return { ...state, cast: { question: data.question, hook: data.hook, at: action.now, answers: {} } };
+    }
+
+    case 'answer': {
+      const text = String(p.text ?? '').trim();
+      if (!state.cast || !text) return state;
+      return { ...state, cast: { ...state.cast, answers: { ...state.cast.answers, [me]: text } } };
+    }
+
+    case 'recap': {
+      const mine = state.familiars[me];
+      if (!mine) return state;
+      const met = metIds(state, me);
+      const last = [...state.pairs].reverse().find((x) => x.a === me || x.b === me);
+      const { data } = await ctx.llm.json(
+        'familiars.recap',
+        {
+          name: mine.name,
+          human: mine.human.name,
+          met: met.size,
+          pairs: state.pairs.filter((x) => x.a === me || x.b === me).length,
+          groups: webGroups(state, me).length,
+          cluster: mine.clusterLabel,
+          lastSay: last?.say ?? '',
+          nearly: keepMissing(state, me)[0]?.shared.length ?? 0,
+        },
+        { app: ctx.app, code: ctx.code, schema: RecapOut, effort: 'low', maxTokens: 400 },
+      );
+      return { ...state, recaps: { ...state.recaps, [me]: { cards: data.cards.slice(0, 3), at: action.now } } };
+    }
+
+    case 'seedDemo':
+      return seedDemo(state, Number(p.n ?? 8), action.now);
 
     default:
       return state;
   }
 }
 
-export const familiars: AppDef<FamState> = {
-  initial: (code) => ({ code, familiars: {}, bumps: [], clusters: [], stories: {} }),
-  reduce,
-};
+export const familiars: AppDef<FamState> = { initial, reduce };

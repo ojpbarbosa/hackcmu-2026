@@ -1,73 +1,44 @@
 import { pick } from './_seed';
 
-/** Forty familiars to hatch from, in the mockup's register: small, animal, one word. */
-const NAMES = [
-  'moth', 'kestrel', 'heron', 'vole', 'marten', 'swift', 'pike', 'wren', 'otter', 'shrike',
-  'lynx', 'grebe', 'newt', 'ibis', 'stoat', 'tern', 'crane', 'hare', 'finch', 'adder',
-  'raven', 'perch', 'dunlin', 'sable', 'egret', 'pika', 'merlin', 'chub', 'plover', 'weasel',
-  'osprey', 'skink', 'gannet', 'roach', 'mink', 'snipe', 'bittern', 'gecko', 'jackdaw', 'loach',
-];
-
 const STOP = new Set([
-  'about', 'after', 'again', 'also', 'always', 'been', 'before', 'every', 'from', 'have', 'here',
-  'into', 'just', 'like', 'make', 'many', 'more', 'most', 'much', 'must', 'never', 'only', 'other',
-  'over', 'people', 'some', 'someone', 'something', 'still', 'than', 'that', 'them', 'then', 'there',
-  'they', 'thing', 'things', 'this', 'time', 'very', 'want', 'well', 'were', 'what', 'when', 'where',
-  'which', 'while', 'with', 'would', 'your', 'mine', 'myself', 'really', 'pretty', 'kind', 'sort',
-  // weak tags: verbs everyone uses, the venue everyone is standing in, counting words
-  'build', 'builds', 'building', 'built', 'work', 'works', 'working', 'love', 'loves', 'live',
-  'lives', 'living', 'made', 'make', 'makes', 'making', 'doing', 'does', 'stuff', 'hackathon',
-  'pittsburgh', 'carnegie', 'mellon', 'campus', 'first', 'obviously', 'literally', 'actually',
-  'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'twelve', 'twenty',
+  'about', 'after', 'again', 'because', 'before', 'could', 'every', 'their', 'there', 'these', 'thing',
+  'things', 'think', 'those', 'where', 'which', 'while', 'would', 'really', 'still', 'stuff', 'lately',
+  'always', 'never', 'myself', 'people', 'pretty', 'though',
 ]);
 
-/** Two-word scenes, matched on a word the person actually wrote. */
-const SCENES: [RegExp, string][] = [
-  [/synth|eurorack|modular|oscillat/, 'modular synths'],
-  [/tape|loop|cassette|record|vinyl/, 'tape loops'],
-  [/shader|render|graphic|pixel|glsl|raymarch/, 'graphics'],
-  [/compil|parser|language|type system|interpreter|lisp/, 'compilers'],
-  [/robot|weld|solder|motor|drone|arduino|solar car/, 'robotics'],
-  [/lab|pipette|protein|cell|bio|agar|microscope/, 'wet lab'],
-  [/film|16mm|camera|edit|darkroom|photo/, 'film'],
-  [/cook|bake|bread|kitchen|menu|dinner|sourdough/, 'kitchen'],
-  [/game|unity|godot|speedrun|level design/, 'games'],
-  [/map|drain|walk|city|trail|transit/, 'field notes'],
-  [/write|poem|zine|essay|novel/, 'writing'],
-  [/server|kernel|distributed|database|network/, 'systems'],
-];
+const CLUSTERS = ['late nights', 'small machines', 'hand tools', 'field notes', 'open kitchens'];
 
-const FALLBACK_SCENES = ['late builds', 'small machines', 'night shift', 'side quests', 'loose ends', 'hand tools'];
+/** Deterministic stand-in for the hatch task: the name and pronouns come straight
+ *  out of the transcript, the keywords are its longest distinct words. */
+export default function mock(input: { transcript?: string; suggestedName?: string }, seed: number) {
+  const transcript = (input?.transcript ?? '').trim();
 
-const words = (s: string): string[] => (s.toLowerCase().match(/[a-z][a-z'-]{2,}/g) ?? []).filter((w) => !STOP.has(w));
+  const nameMatch = transcript.match(/(?:i'?m|i am|my name is|call me)\s+([A-Za-z][\w-]+)/i);
+  const humanName = nameMatch ? nameMatch[1][0].toUpperCase() + nameMatch[1].slice(1) : '';
 
-/** Deterministic stand-in for the hatch task: a name, five tags, and a scene. */
-export default function mock(input: { seeds?: string[]; human?: { name?: string } }, seed: number) {
-  const seeds = (input?.seeds ?? []).map(String);
-  const text = seeds.join(' ').toLowerCase();
-  const all = seeds.flatMap(words);
+  const pronounMatch = transcript.match(/\b(he\/him|she\/her|they\/them)\b/i);
+  const pronouns = pronounMatch ? pronounMatch[1].toLowerCase() : 'they/them';
 
+  const seen = new Set<string>();
   const keywords: string[] = [];
-  for (const w of all) {
-    if (w.length >= 4 && !keywords.includes(w)) keywords.push(w);
+  for (const w of (transcript.toLowerCase().match(/[a-z][a-z'-]{4,}/g) ?? [])
+    .slice()
+    .sort((a, b) => b.length - a.length)) {
+    if (STOP.has(w) || seen.has(w)) continue;
+    seen.add(w);
+    keywords.push(w);
     if (keywords.length === 5) break;
   }
-  for (const w of all) {
-    if (keywords.length === 5) break;
-    if (!keywords.includes(w)) keywords.push(w);
-  }
-  while (keywords.length < 5) keywords.push(pick(['night', 'build', 'city', 'sound', 'code'], seed + keywords.length));
+  while (keywords.length < 3) keywords.push(['night', 'making', 'walking'][keywords.length]);
 
-  const scene = SCENES.find(([re]) => re.test(text))?.[1];
-  const fromSeed = [...words(seeds[0] ?? '')]
-    .filter((w) => w.length >= 4)
-    .sort((a, b) => b.length - a.length)
-    .slice(0, 2);
-  const ordered = words(seeds[0] ?? '').filter((w) => fromSeed.includes(w));
+  const familiarName = input?.suggestedName ?? 'Merlin';
 
   return {
-    name: pick(NAMES, seed),
+    humanName,
+    pronouns,
+    familiarName,
     keywords,
-    clusterLabel: scene ?? (ordered.length ? ordered.slice(0, 2).join(' ') : pick(FALLBACK_SCENES, seed)),
+    clusterLabel: keywords[0] ? `${keywords[0]} people` : pick(CLUSTERS, seed),
+    greeting: `So it is ${keywords[0]} we are doing tonight.`,
   };
 }

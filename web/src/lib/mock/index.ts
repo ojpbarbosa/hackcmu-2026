@@ -3,8 +3,12 @@ import castPrompt from './cast.prompt';
 import castPlan from './cast.plan';
 import famHatch from './familiars.hatch';
 import famExchange from './familiars.exchange';
-import famStory from './familiars.story';
-import famCluster from './familiars.cluster';
+import famIntro from './familiars.intro';
+import famRecap from './familiars.recap';
+import castsPrompt from './casts.prompt';
+import scoutPlan from './scout.plan';
+import scoutExtract from './scout.extract';
+import scoutFit from './scout.fit';
 import detNudges from './detour.nudges';
 import detStory from './detour.story';
 import palProfile from './palate.profile';
@@ -18,8 +22,12 @@ export const mocks: Record<TaskName, (input: never, seed: number) => unknown> = 
   'cast.plan': castPlan,
   'familiars.hatch': famHatch,
   'familiars.exchange': famExchange,
-  'familiars.story': famStory,
-  'familiars.cluster': famCluster,
+  'familiars.intro': famIntro,
+  'familiars.recap': famRecap,
+  'casts.prompt': castsPrompt,
+  'scout.plan': scoutPlan,
+  'scout.extract': scoutExtract,
+  'scout.fit': scoutFit,
   'detour.nudges': detNudges,
   'detour.story': detStory,
   'palate.profile': palProfile,

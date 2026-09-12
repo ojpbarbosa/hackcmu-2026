@@ -31,3 +31,14 @@ export function hash(s: string): number {
   }
   return h >>> 0;
 }
+
+/** Stable id for an unordered pair of ids. Same two ids → same id, either order. */
+export function pairIdFor(a: string, b: string): string {
+  const [x, y] = [a, b].sort();
+  let h = 2166136261;
+  for (const ch of `${x}|${y}`) {
+    h ^= ch.charCodeAt(0);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return `pair_${h.toString(36)}`;
+}

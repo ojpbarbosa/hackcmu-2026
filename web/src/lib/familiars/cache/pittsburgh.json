@@ -1,0 +1,38 @@
+{
+  "city": "Pittsburgh",
+  "cards": [
+    {
+      "id": "cached_market",
+      "title": "Squirrel Hill farmers market photo walk",
+      "whenISO": "2026-09-19T14:00:00.000Z",
+      "where": "Squirrel Hill, Beacon St lot",
+      "cost": "free",
+      "kind": "listed_event",
+      "source": "https://www.pittsburghpa.gov/citiparks/farmers-markets",
+      "cached": true,
+      "why": "Saturday 10:00, outdoors, and nobody has to talk first."
+    },
+    {
+      "id": "cached_synth",
+      "title": "Friday synth and DIY electronics night",
+      "whenISO": "2026-09-18T23:30:00.000Z",
+      "where": "Prototype Haven makerspace, Lawrenceville",
+      "cost": "$5",
+      "kind": "listed_event",
+      "source": "https://www.protohaven.org/events",
+      "cached": true,
+      "why": "Bring a patch cable and somebody will plug into it."
+    },
+    {
+      "id": "cached_climb",
+      "title": "Sunday climbing session, all levels",
+      "whenISO": "2026-09-20T18:00:00.000Z",
+      "where": "Ascend Climbing, South Side",
+      "cost": "$22 day pass",
+      "kind": "listed_event",
+      "source": "https://www.ascendclimbing.com/south-side",
+      "cached": true,
+      "why": "Two hours where the conversation is the belay."
+    }
+  ]
+}
