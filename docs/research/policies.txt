@@ -1,0 +1,135 @@
+Schedule
+Friday (+ a bit):
+5:00 PM–6:00 PM: Boarding
+6:30 PM–7:00 PM: Departure/Hacking Starts!
+
+7:00 PM–9:00 PM: Dinner (Roots)
+
+9:00 PM–10:00 PM: IFM Workshop
+10:00 PM–10:30 PM: SpaceXAI/Cursor Workshop
+
+12:00 AM–1:00 AM: Midnight Snack (Cookies & Hot Chocolate)
+
+Saturday Morning:
+12:00 PM–1:00 PM: Lunch (Jimmy Johns)
+
+4:00 PM: Hacking STOPS!
+
+4:00 PM–6:30 PM: Judging
+6:30 PM–7:00 PM: Dinner (Pizza Pronto)
+7:00 PM–8:00 PM: Closing Ceremony (and PRIZES)
+matthew — 20:41
+Tracks and Prizes
+Tracks
+Optimization Your project embodies the theme "optimization".
+Travelling Your project embodies the theme "multiplayer".
+Multiplayer: Your project embodies the theme "multiplayer".
+Food: Your project relates to the theme "food".
+
+Platinum Sponsor Track
+IFM: Use IFMs models in your project.
+
+Choosing Tracks
+When you submit your project, you must submit to 1 track, unless one of the tracks you submit to is the IFM track, in which case you may submit to 2 tracks.
+
+Examples:
+Food ✅
+Food and Traveling ❌
+Food and IFM ✅
+Food, Traveling and IFM  ❌
+
+Prizes
+Track Prizes
+For each of the 4 main non-sponsor tracks (Optimization, Traveling, Multiplayer, Food), the top three teams in each track get prizes!
+
+First Place: Jump AirPod Pros + Mini-Projector!
+Second Place: Visa Swag Bag!
+Third Place: Keyboard + Themed Keychain!
+
+Grand Prize: HRT Poker Set!
+The grand prize is awarded to the judges favorite overall project across all the tracks! It will be one of the projects that won one of the tracks in addition to their other prizes.
+
+People's Favorite: Ticket to Ride Board Game!
+After the announcement of the track winners, participants can vote among them for their personal favorite. It will be awarded in addition to their other prizes.
+
+Best Design Prize: Fujifilm QuickSnap Cameras!
+
+IFM Sponsor Track Prize
+If a team uses K2 Horizon they are eligible.
+The best use of K2 Horizon will win a Kindle Paperwhite + 100 M tokens of K2 Horizon for use after the event!
+
+Make it Legendary with SpaceXAI Prize
+Use Grok or Cursor and win a Custom Cursor Keyboard and Cursor Owalas! Details linked here.
+
+Sandia National Laboratories Prize
+Sandia National Laboratories' favorite cybersecurity related project will win AirPods with Noise Cancellation! 
+Mary from MLH — 21:03
+Hey all! Here's is the list of MLH Prizes this weekend. You can enter for as many of the MLH prizes as you would like. 
+
+🤖 Best Use of Gemini API
+Prize: Google Swag Kits
+Build Link: https://mlh.link/gemini
+
+🎙️ Best Use of ElevenLabs
+Prize: Wireless Earbuds
+Build Link: https://mlh.link/elevenlabs
+
+🔗 Best Use of Solana
+Prize: Ledger Nano S Plus
+Build Link: https://mlh.link/solana
+
+☁️ Best Use of Vultr
+Prize: Portable Screens
+Build Link: https://mlh.link/vultr
+
+🔒 Best Use of Auth0
+Prize: Wireless Headphones
+Build Link: https://mlh.link/auth0
+
+💾 Best Use of MongoDB Atlas
+Prize: M5Stack IoT Kit
+Build Link: https://mlh.link/mongodb
+Google Cloud Platform
+Introduction | ElevenLabs Documentation
+Vultr | MLH Partner
+The Conductor [ᵇᵘⁿⁱ],  — 21:33
+Encaminhada
+Hi @everyone! I'm Jane Zhang from the Institute of Foundation Models (IFM). We're excited to sponsor a custom track at HackCMU: Best Use of K2 Horizon.
+
+🎉 40M free tokens of K2 Horizon available to every team! Each API key comes with a daily limit of 10 million tokens — for a team of four, that's 40 million tokens total, free to build your project.
+
+The Prize: each member of the winning team gets a Kindle Paperwhite + 100M tokens of K2 Horizon for their own project after the event.
+
+API Access: Get your key directly here: https://platform.ifm.ai/r/hackcmu
+
+About K2 Horizon: our newest fully open model fleet — six models from 0.9B to 375B parameters, with weights, code, training data, and methodology all released under Apache 2.0. Every hacker gets access to our flagship, K2 Horizon 375B-A23B, built for advanced reasoning, coding, and agentic workflows.
+
+Want a hands-on walkthrough first? Join our IFM Workshop Friday at 9:00–10:00 PM in Tepper 1403 for a live demo, API walkthrough, and Q&A.
+
+Questions? Find us at our sponsor table during the hackathon, or join our IFM Discord to stay connected with the K2 Horizon builder community beyond this weekend: https://ifm.ai/discord
+Discord
+Join the IFM Developer Community Discord Server!
+Welcome to the official IFM Developer Community. Connect with developers and researchers building the next generation of open foundation models. | 424 members
+#general  •  19:27
+matthew — 21:41
+Make it Legendary with SpaceXAI Prize
+Create a solution with Cursor using Grok technology that addresses a real-world challenge faced by humanity. Your solution should push the boundaries of what humanity can know and do by addressing societal issues in areas like public health, sustainability, and education. Try to go beyond everyday problems. Embrace your most ambitious ideas and use AI to bring those to life.
+
+Imagine Cursor is your canvas and paint brush. Grok products will be the paints you choose from to elevate your project and take it to the next level. You’ll code with Cursor, generate images or videos with Grok Imagine, and integrate voice with Grok Voice - all powered by Grok models, our most capable reasonable model.
+
+SpaceXAI is the world's most useful AI. SpaceXAI does the parts nobody brags about, so you can build the part they do. We’re giving you the tools to build something incredible, so go out and make it legendary.
+
+We're looking for projects with compelling use cases of Grok products built with Cursor's powerful engine. Each member of the winning team will receive a custom Cursor keyboard. All participants who partake in the challenge will receive Cursor and Grok credits to build their project.
+Fiona Whittington (SpaceXAI) — 23:17
+Grok Bot API Access
+Redemption Code: SPACEXAI_HACK_CMU_20260911
+
+Navigate to https://console.x.ai/
+Skip the onboarding step by removing the stuff after welcome URL (so you can avoid creating a subscription)
+Go down into the billing area in the bottom left and click "enter redemption code"
+
+We will be back at 9AM tomorrow to help anyone who gets stuck. I'll be here until midnight but also you can Grok Bot. 👀
+
+MLH is not a track. It's just a prize
+If you want to be eligible, just use the technology specified in the award in your hackathon project
+and make sure to specifically say it in your project pitch.

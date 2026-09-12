@@ -1,0 +1,423 @@
+Opening Ceremony Delayed: 6:15PM
+Katie
+
+ç√
+Departure
+Discord
+Insert qr code
+acmatcmuacm-exec@cs.cmu.eduacmatcmu.com
+ACM@CMU
+Katie
+
+ç√
+Departure
+ACM@CMU
+
+A little bit about ACM@CMU
+Host HACKCMU, AWAP, and HACKBERRY PI every year
+Create game, websites, and servers used in hackathons. Do research, get mentorship, and more!
+
+Sponsors + Partners
+ç√
+
+Logistics
+What is HackCMU?
+24 Hours
+Teams of up to 4 people
+Mentorship & Workshops
+Hacking
+Lots of free food
+Prizes
+
+ç√
+ç√
+
+ç√
+Schedule
+Katie
+
+Schedule: Friday
+ç√
+05:00 - 06:00 pm
+Boarding
+06:00 - 06:30 pm
+Departure (now)
+07:00 - 09:00 pm 
+Dinner + Sponsor Expo
+09:00 pm
+Hacking Starts!
+09:00 - 10:00 pm
+IFM Workshop
+10:00 - 10:30 pm
+Cursor Workshop
+12:00 - 1:00 am
+Midnight Cafe Halte
+All events will happen in Tepper Simmons Auditorium unless stated otherwise
+
+Schedule: Saturday
+ç√
+12:00 - 01:00 pm
+Lunch
+04:00 pm
+Baggage Check
+04:00 - 06:30 pm
+Platform Showcase
+06:30 - 07:00 pm
+Dinner
+07:00 - 08:00 pm
+Arrival
+All events will happen in Tepper Simmons Auditorium unless stated otherwise
+
+ç√
+Tracks
+Mikeal
+
+Tracks
+
+ç√
+ç√
+ç√
+ç√
+ç√
+
+Tracks
+
+ç√
+Optimization
+ç√
+ç√
+ç√
+ç√
+
+Tracks
+
+ç√
+Optimization
+ç√
+ç√
+Traveling
+ç√
+ç√
+
+Tracks
+
+ç√
+Optimization
+ç√
+Multiplayer
+ç√
+Traveling
+ç√
+ç√
+
+Tracks
+
+ç√
+Optimization
+ç√
+Multiplayer
+ç√
+Traveling
+ç√
+Food
+ç√
+
+Tracks
+
+ç√
+Optimization
+ç√
+Multiplayer
+ç√
+Traveling
+ç√
+Food
+ç√
+IFM
+(optional)
+
+Tracks
+
+ç√
+Optimization
+
+perhaps optimize something? 0.0
+ç√
+Traveling
+ç√
+Multiplayer
+ç√
+Food
+
+Tracks
+
+ç√
+Traveling
+
+what does traveling mean to you? hm….
+ç√
+Optimization
+ç√
+Multiplayer
+ç√
+Food
+
+Tracks
+
+ç√
+Multiplayer
+
+this is how you can meet people and touch grass :P
+ç√
+Optimization
+ç√
+Traveling
+ç√
+Food
+
+Tracks
+
+ç√
+Food
+
+Yummy! :D
+ç√
+Optimization
+ç√
+Traveling
+ç√
+Multiplayer
+
+Clarifications
+You are welcome to use any kind of language or AI and make any kind of applications (must be from scratch).
+Try to fit into the theme of the track you choose (part of judging criteria)
+If you feel your project fit into multiple tracks, pick one when submitting. If you have questions about tracks, ask us!
+
+ç√
+Mentors
+Katie
+
+Mentors
+Office Hours & Tickets
+Live Office Hours: Saturday 10am-1pm TEP Simmons B
+Remote Support throughout hackathon: Discord Tickets
+Areas
+Fullstack, Frontend, Backend
+Mobile Dev
+Machine Learning, Data Science
+Cloud Dev
+
+
+ç√
+Sponsor Fair
+Katie
+
+Sponsor Tabling
+IFM
+
+A global AI research lab dedicated to open and independent development of frontier-class foundation models. 
+Launched in May 2025 by MBZUAI
+Operates from advanced lab facilities in Abu Dhabi, Silicon Valley and Paris. 
+IFM's model portfolio
+K2 series: six fully open-source AI models
+Jais: the most advanced Arabic LLM
+PAN: the next-gen World Model for embodied reasoning and real-world simulation
+
+SpaceXAI
+
+Company behind Grok and SpaceXAI
+Build frontier AI models to understand the universe
+One model family, One API
+Frontier intelligence for useful work:
+chat
+hard engineering
+real-time voice
+image and video
+Sponsor Tabling
+Vincent
+
+Sandia
+
+Delivers essential science and technology to resolve the nation's most challenging security issues and is the nation's premier science and engineering lab for national security and technology
+Focused on cutting-edge technology, ranging from homeland defense, global security, biotechnology, and environmental preservation to energy and combustion research, computer security, and nuclear defense.
+Sponsor Tabling
+sandia
+
+Querit
+
+Building a global Web Search API and search infrastructure for LLMs, AI agents, and in-app search
+Transforms the open web into AI-ready knowledge through up-to-date search, structured extraction, and source grounding to answer the latest questions, make accurate judgments, and take reliable action, with unique Multilingual index
+Sponsor Tabling
+
+MLH
+
+The world's largest developer community
+Sponsor Tabling
+
+IFM Workshop
+Friday 09:00 - 10:00 pm
+TEP 1403
+
+Learn about IFM and how to use IFM tool’s like their K2 models to build your hackathon project.
+Sponsor Events
+
+Cursor Workshop
+Friday 10:00 - 10:30 pm
+TEP 1403
+
+Learn how to use SpaceXAI's tools like Cursor, Grok Imagine, and Grok Bot to build your resume, create a portfolio website, and apply to jobs in 30 minutes.
+Sponsor Events
+Vincent
+
+ç√
+Judging + Expo
+Katie
+
+Judging
+3 min presentation + demo
+We will have 3 rooms of judges
+Feel free to watch other project’s demos
+Will have spreadsheet showing where and when you will be judged
+
+Expo
+While waiting, walk around expo to see other people’s projects and showcase your own!
+We will have tables set up for each group with submission
+
+Judging Criteria
+ç√
+Originality
+Technical Difficulty
+Demo 
+Quality
+Usefulness
+Relevance (Track only)
+Entirely novel 
+
+A fresh approach to a problem
+Real technical challenges
+
+vs
+
+ChatGPT wrapper
+Clear, understandable, and under 3 minutes
+Practical and fulfills a real need
+How related the project idea is to the track it applied to
+
+ç√
+Prizes
+Katie
+
+Prize Categories
+Grand Prize
+Track Prizes
+IFM Prize
+Cursor Prize
+Sandia Prize
+People’s Favorite
+Best Design Prize
+MLH Prizes
+
+Grand Prize
+   HRT Poker Set
+
+Track Prizes
+   1st Place: 
+   Mini Projector + 
+   Jump Airpod Pros
+
+   2nd Place:
+   Visa Swag Bags
+
+   3rd Place:
+     Keyboard + 
+     Keychain
+ç√
+ç√
+ç√
+
+Track Prizes
+   1st Place: 
+   Mini Projector + 
+   Jump Airpod Pros
+
+   2nd Place:
+   Visa Swag Bags
+
+   3rd Place:
+   Keyboard + 
+   Keychain
+ç√
+ç√
+
+Sponsor Prize
+   IFM Kindle Lite
+
+
+ç√
+
+People’s Favorite Prize
+Ticket to Ride
+
+Best Design Prize
+Fujifilm QuickSnap Camera
+
+Cursor Prize
+Cursor Keyboards
+ç√
+
+Sandia Prize: Cybersecurity
+   Airpods w/ Noise Cancellation
+ç√
+
+MLH Prizes
+Best Use of Gemini API: Google Swag Kits
+
+Best Use of ElevenLabs: Wireless Earbuds
+
+Best Use of Solana: Ledger Nano S Plus
+
+Best Use of Vultr: Portable Screens
+
+Best Use of Auth0: Wireless Headphones
+
+Best Use of MongoDB Atlas: M5Stack IoT Kit
+
+ç√
+IFM Talk (10 mins)
+Katie
+
+ç√
+Cursor Talk (5 mins)
+Vincent
+
+ç√
+MLH Talk (5 mins)
+Katie
+
+ç√
+Final Things
+Katie
+
+Final Things
+Join discord and turn on notifications for announcements
+Slides are posted on the discord
+Projects due at 4pm tomorrow (submit google form!)
+Schedule at https://www.acmatcmu.com/hackcmu2026/
+Discord
+Insert qr code
+
+ç√
+QUestions?
+Katie
+
+ç√
+Next Stop: Sponsor Expo
+Katie
+
+IFM WORKSHHOP 9:00PM
+TEPPER 1403
+Katie
+
+SpACEXAI WORKSHHOP 10:00PM
+TEPPER 1403
+Katie

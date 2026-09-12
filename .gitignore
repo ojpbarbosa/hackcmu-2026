@@ -1,0 +1,8 @@
+node_modules
+.next
+.vercel
+.env
+.env.local
+web/.shots
+.impeccable/review
+.DS_Store
