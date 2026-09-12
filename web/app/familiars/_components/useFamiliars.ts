@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMember } from '@/hooks/useMember';
 import { useRoom } from '@/hooks/useRoom';
 import type { Familiar, FamState } from '@/lib/apps/familiars';
@@ -22,6 +22,8 @@ export type FamiliarsRoom = {
   me: Familiar | null;
   act: (name: string, payload?: unknown) => Promise<void>;
   serverNow: () => number;
+  /** same clock as `serverNow`, named for the selectors that take `now` */
+  now: () => number;
   connected: boolean;
   events: ObserveEvent[];
   /** the search params this page was opened with, once the client has them */
@@ -39,6 +41,17 @@ export function useFamiliars(): FamiliarsRoom {
     setParams(p);
     setCode((p.get('room') ?? DEFAULT_ROOM).toUpperCase());
   }, []);
+
+  // An id has to exist before the first act(). The real name is written after the
+  // hatch, from me.human.name — this placeholder only mints the member id.
+  const memberRef = useRef<Member | null>(member);
+  memberRef.current = member;
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!memberRef.current) setName('someone');
+    }, 80);
+    return () => clearTimeout(t);
+  }, [setName]);
 
   const room = useRoom<FamState>('familiars', code, member);
   const { state } = room;
@@ -60,6 +73,7 @@ export function useFamiliars(): FamiliarsRoom {
     // that depends on it on every render
     act: room.act,
     serverNow: room.serverNow,
+    now: room.serverNow,
     connected: room.connected,
     events: room.events,
     params,
