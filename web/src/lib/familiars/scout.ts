@@ -10,7 +10,7 @@ import type { LLM } from '../llm';
 const QUERIT_BASE = () => process.env.QUERIT_BASE_URL ?? 'https://api.querit.ai/v1';
 const TIMEOUT_MS = 20000;
 
-type SearchHit = { title: string; url: string; snippet: string; image?: string };
+type SearchHit = { title: string; url: string; snippet: string; image?: string; text?: string };
 
 async function querit<T>(path: string, body: object): Promise<T> {
   const key = process.env.QUERIT_API_KEY;
@@ -45,9 +45,9 @@ type QueritResult = {
 async function search(query: string): Promise<SearchHit[]> {
   const body = await querit<{ results?: { result?: QueritResult[] } }>('/search', {
     query,
-    count: 6,
+    count: 8,
     chunksPerDoc: 1,
-    needContent: false,
+    needContent: true,
     filters: {
       timeRange: { date: 'm2' },
       geo: { countries: { include: ['united states'] } },
@@ -63,7 +63,14 @@ async function search(query: string): Promise<SearchHit[]> {
       title: r.title ?? '',
       snippet: [r.snippet ?? '', r.page_age ? `(page age: ${r.page_age})` : ''].join(' ').trim(),
       image: Array.isArray(r.images) ? r.images[0] : undefined,
+      text: Array.isArray(r.sentence) ? r.sentence.join(' ').slice(0, 3500) : undefined,
     }));
+}
+
+/** Keep hits that look local; the web is full of other cities' weekends. */
+function local(h: SearchHit): boolean {
+  const t = `${h.title} ${h.snippet} ${h.text ?? ''} ${h.url}`.toLowerCase();
+  return /pittsburgh|\bpgh\b|carnegie|cmu|\bpitt\b|oakland pa|squirrel hill|lawrenceville|shadyside|allegheny|strip district|bloomfield|east liberty/.test(t);
 }
 
 /** POST /v1/contents: one page as text, with the LLM-highlighted event details and metadata. */
@@ -141,8 +148,9 @@ export async function runScout(
         hits.push(h);
       }
     }
-    const top = hits.slice(0, 4);
-    console.log('[scout] plan', JSON.stringify(plan.data.queries), 'hits', top.length);
+    const locals = hits.filter(local);
+    const top = (locals.length >= 2 ? locals : hits).slice(0, 5);
+    console.log('[scout] plan', JSON.stringify(plan.data.queries), 'hits', hits.length, 'local', locals.length);
     status.push(`Reading ${top.length} pages`);
 
     const pages = await Promise.all(
@@ -150,8 +158,9 @@ export async function runScout(
         try {
           return { hit: h, page: await fetchPage(h.url) };
         } catch (e) {
-          console.error('[scout] contents failed', h.url, String(e).slice(0, 200));
-          return null;
+          // no contents plan, or a slow page: the search already carried the page sentences
+          console.warn('[scout] contents unavailable, using search text', h.url, String(e).slice(0, 120));
+          return { hit: h, page: { text: h.text || h.snippet } };
         }
       }),
     );
