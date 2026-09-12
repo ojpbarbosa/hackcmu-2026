@@ -158,7 +158,7 @@ label(s, 0.9, 0.55, '5 · out')
 text(s, 0.9, 0.8, 8.0, 1.1, [[('Merlin goes out and finds three. Swipe.', 28, INK, True)]])
 text(s, 9.3, 0.9, 3.4, 1.0, [[('Real events, with the source. When everyone swipes right on the same one, it is a plan.', 13, INK2, False)]], spacing=1.2)
 row(s, [9, 10, 11])
-tech(s, [('Querit', 'web search and page fetch for real events'), ('K2 375B', 'plans the queries, extracts the facts, never invents'), ('K2 0.9B', 'personal familiar acts on your behalf locally')])
+tech(s, [('Querit', 'web search and fetch events'), ('K2 375B', 'plans the queries, extracts the facts'), ('K2 0.9B', 'personal familiar acts on your behalf locally')])
 notes(s, 'Send your familiar out. Querit searches and fetches real pages, the 375B plans the queries and extracts the facts, and it never invents an event. Three cards, swipe, and when everyone is in, it is a plan.')
 
 # 9 recap
