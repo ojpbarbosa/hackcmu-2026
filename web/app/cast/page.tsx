@@ -39,6 +39,15 @@ export default function CastHome() {
     void act('castNow');
   }, [act]);
 
+  // the name sheet comes before the room: a circle only exists once somebody joins
+  // it, so a phone that opens the link first would otherwise wait forever
+  if (ready && !member) {
+    return (
+      <Screen app="cast">
+        <NameSheet circleName={state?.name ?? 'the circle'} onJoin={setName} />
+      </Screen>
+    );
+  }
   if (!ready || !state) {
     return (
       <Screen app="cast">
@@ -46,13 +55,6 @@ export default function CastHome() {
           <Label>cast</Label>
           <Body>finding the circle…</Body>
         </div>
-      </Screen>
-    );
-  }
-  if (!member) {
-    return (
-      <Screen app="cast">
-        <NameSheet circleName={state.name} onJoin={setName} />
       </Screen>
     );
   }
