@@ -8,6 +8,9 @@ import { NameSheet, useCastRoom, useTicker } from './_components/useCastRoom';
 import { circle, isTyping, mmss, openCast, personOf } from './_components/model';
 import { arm } from './_components/reel';
 
+/** cast ids this tab has already been pulled to, so the pull happens once */
+const pulledTo = new Set<string>();
+
 /** Screen 1 — the circle. Who is here, how to get here, and the two ways a cast starts. */
 export default function CastHome() {
   const room = useCastRoom();
@@ -24,8 +27,11 @@ export default function CastHome() {
   const open = openCast(state);
   const openId = open?.id;
   const unanswered = !!open && !!me && !open.answers[me];
+  // a landing cast pulls this phone to it once; after that the circle stays reachable
   useEffect(() => {
-    if (unanswered && openId) router.push(`/cast/cast?room=${code ?? ''}`);
+    if (!unanswered || !openId || pulledTo.has(openId)) return;
+    pulledTo.add(openId);
+    router.push(`/cast/cast?room=${code ?? ''}`);
   }, [unanswered, openId, code, router]);
 
   const castNow = useCallback(() => {
@@ -138,7 +144,7 @@ export default function CastHome() {
         </Card>
 
         {latest ? (
-          <CTA variant="ghost" href={`/cast/tonight?room=${code ?? ''}`}>
+          <CTA variant="ghost" href={`/cast/${open ? 'cast' : 'tonight'}?room=${code ?? ''}`}>
             {open ? 'Go to the open cast' : 'See the last reveal'}
           </CTA>
         ) : (
