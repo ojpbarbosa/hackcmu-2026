@@ -86,6 +86,10 @@ export default function WebHome() {
   const graph = useMemo(() => (state && me ? layout(state, me.id) : null), [state, me]);
   const missing = useMemo(() => (state && me ? keepMissing(state, me.id) : []), [state, me]);
   const metCount = useMemo(() => (state && me ? metIds(state, me.id).size : 0), [state, me]);
+  const castingNow = useMemo(
+    () => (state && me ? Object.keys(state.casting ?? {}).filter((id) => id !== me.id && !!state.familiars[id]).length : 0),
+    [state, me],
+  );
 
   if (!state || !me || !graph) {
     return (
@@ -108,6 +112,11 @@ export default function WebHome() {
       <div className="top">
         <div className="nav">
           <span className="pill chip">your web · {metCount}</span>
+          {castingNow ? (
+            <Link className="pill chip" href={withRoom('/familiars/meet', code)} style={{ marginLeft: 8, color: 'var(--gold)' }}>
+              ● {castingNow} casting now
+            </Link>
+          ) : null}
           {recap ? (
             <Link className="bubble-btn bubble" href={withRoom('/familiars/you', code) + '#recap'} aria-label="tonight's recap">
               <Creature traits={me.traits} size={30} glow={false} />

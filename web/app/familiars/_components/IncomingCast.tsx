@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { activeCasts } from '@/lib/apps/familiars';
+import { castsFor } from '@/lib/apps/familiars';
 import type { FamState, Familiar } from '@/lib/apps/familiars';
 import { serverNow } from '@/hooks/useServerClock';
 import { Creature } from './Creature';
@@ -41,7 +41,7 @@ export function IncomingCast({
   }, [state, me, code, router, now]);
 
   if (!me || !state) return null;
-  const incoming = activeCasts(state, now).find((c) => c.from !== me.id && !!state.familiars[c.from]) ?? null;
+  const incoming = castsFor(state, me.id, now)[0] ?? null;
   if (!incoming || dismissed === incoming.id) return null;
   const theirs = state.familiars[incoming.from];
 

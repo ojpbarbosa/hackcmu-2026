@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Creature from '../_components/Creature';
 import { useFamiliars, withRoom } from '../_components/useFamiliars';
 import { useWiggle } from '../_components/useWiggle';
-import { activeCasts } from '@/lib/apps/familiars';
+import { activeCasts, castsFor } from '@/lib/apps/familiars';
 import type { Familiar, Pair } from '@/lib/apps/familiars';
 
 const NEAR_POS: React.CSSProperties[] = [
@@ -66,11 +66,14 @@ export default function MeetPage() {
 
   const armed = !!(me && state?.casting?.[me.id]);
 
-  const onSpike = useCallback(() => {
-    if (!me) return;
-    setCastAt(Date.now());
-    void act('wiggle');
-  }, [act, me]);
+  const onSpike = useCallback(
+    (to?: string) => {
+      if (!me) return;
+      setCastAt(Date.now());
+      void act('wiggle', typeof to === 'string' ? { to } : undefined);
+    },
+    [act, me],
+  );
 
   const { available, permission, request, level } = useWiggle({ enabled: armed, onSpike });
 
@@ -103,7 +106,7 @@ export default function MeetPage() {
   }, [request, act]);
 
   const nowMs = now();
-  const incoming = me && state ? (activeCasts(state, nowMs).find((c) => c.from !== me.id) ?? null) : null;
+  const incoming = me && state ? (castsFor(state, me.id, nowMs)[0] ?? null) : null;
   const theirs: Familiar | null = incoming && state ? (state.familiars[incoming.from] ?? null) : null;
 
   const pair: Pair | null =
@@ -146,7 +149,7 @@ export default function MeetPage() {
   const caught = !!(me && castAt > 0 && Date.now() - castAt < 30000 && Date.now() - castAt > 1500 && !myCastOut && !pair);
 
   const castingOthers =
-    me && state ? Object.keys(state.casting ?? {}).filter((id) => id !== me.id) : [];
+    me && state ? Object.keys(state.casting ?? {}).filter((id) => id !== me.id && !!state.familiars[id]) : [];
   const pulsing = castAt > 0 && Date.now() - castAt < 20000;
 
   /* ------------------------------------------------------------------- duet */
@@ -311,7 +314,9 @@ export default function MeetPage() {
           {me && <Creature traits={me.traits} size={150} mood="idle" glow />}
         </div>
         <div className="pad" style={{ marginTop: 26, display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'center' }}>
-          <p className="d2">{pulsing ? `cast out…` : `wiggle to cast ${me?.name ?? 'your familiar'}`}</p>
+          <p className="d2">
+            {pulsing ? `cast out…` : available ? `wiggle to cast ${me?.name ?? 'your familiar'}` : `cast ${me?.name ?? 'your familiar'} to the room`}
+          </p>
           {caught ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
               <p className="s mute">someone caught {me?.name}. The familiars are talking…</p>
@@ -322,6 +327,29 @@ export default function MeetPage() {
               <i style={{ width: pulsing ? '100%' : `${Math.max(6, Math.min(100, Math.round(level * 70)))}%` }} />
             </div>
           )}
+          {castingOthers.length ? (
+            <div className="castlist">
+              <p className="lbl" style={{ textAlign: 'left' }}>casting now</p>
+              {castingOthers.slice(0, 6).map((id) => {
+                const f = state?.familiars[id];
+                if (!f) return null;
+                return (
+                  <div className="castrow" key={id}>
+                    <Creature traits={f.traits} size={40} glow={false} />
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <b>{f.name}</b>
+                      <small>{f.human.name}</small>
+                    </div>
+                    <button className="chip on" type="button" disabled={pulsing} onClick={() => onSpike(id)}>
+                      Cast to {f.name}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="s mute">{available ? 'nobody else is casting yet' : 'nobody else is casting yet · they can catch you from any tab'}</p>
+          )}
         </div>
       </div>
       <div className="bottom">
@@ -331,13 +359,13 @@ export default function MeetPage() {
           </button>
         )}
         {(available && permission === 'granted') && !pulsing && !caught && (
-          <button className="cta ghost" type="button" onClick={onSpike}>
+          <button className="cta ghost" type="button" onClick={() => onSpike()}>
             Cast without wiggling
           </button>
         )}
         {(!available || permission !== 'granted') && (
-          <button className="cta gold" type="button" onClick={onSpike}>
-            Wiggle
+          <button className="cta gold" type="button" disabled={pulsing} onClick={() => onSpike()}>
+            {available ? 'Wiggle' : `Cast ${me?.name ?? ''} to everyone nearby`}
           </button>
         )}
       </div>

@@ -55,7 +55,7 @@ export type FamState = {
   code: string;
   familiars: Record<string, Familiar>;
   casting: Record<string, { armedAt: number }>;
-  pendingCasts: { id: string; from: string; at: number }[];
+  pendingCasts: { id: string; from: string; at: number; to?: string }[];
   pairs: Pair[];
   intros: Record<string, { to: string; via: string; line: string; at: number }>;
   scout: {
@@ -181,6 +181,14 @@ export function keepMissing(state: FamState, me: string): { id: string; shared: 
 
 export function activeCasts(state: FamState, now: number): FamState['pendingCasts'] {
   return state.pendingCasts.filter((c) => now - c.at < CAST_TTL_MS);
+}
+
+/** The casts this person can catch right now: from someone else, hatched, and either
+ *  open to the room or addressed to them. */
+export function castsFor(state: FamState, me: string, now: number): FamState['pendingCasts'] {
+  return activeCasts(state, now)
+    .filter((c) => c.from !== me && !!state.familiars[c.from] && (!c.to || c.to === me))
+    .sort((x, y) => y.at - x.at);
 }
 
 /** The card every hatched, non-demo member swiped in on. */
@@ -446,13 +454,12 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
 
     case 'wiggle': {
       if (!state.casting[me] || !state.familiars[me]) return state;
-      // someone else cast in the last few seconds: that is a mutual wiggle, pair now, no tap
-      const mate = state.pendingCasts
-        .filter((c) => c.from !== me && action.now - c.at < MUTUAL_MS && !!state.familiars[c.from])
-        .sort((x, y) => y.at - x.at)[0];
+      const to = typeof p.to === 'string' && state.familiars[p.to] && p.to !== me ? p.to : undefined;
+      // someone else cast in the last few seconds (to the room, or to me): mutual, pair now, no tap
+      const mate = castsFor(state, me, action.now).filter((c) => action.now - c.at < MUTUAL_MS && (!to || c.from === to))[0];
       if (mate) return pairUp(state, ctx, mate.id, mate.from, me, action.now);
       const pendingCasts = state.pendingCasts.filter((c) => c.from !== me);
-      pendingCasts.push({ id: `cast_${me}_${action.now}`, from: me, at: action.now });
+      pendingCasts.push({ id: `cast_${me}_${action.now}`, from: me, at: action.now, ...(to ? { to } : {}) });
       return { ...state, pendingCasts };
     }
 
