@@ -7,3 +7,5 @@ web/.shots
 web/.qa
 .impeccable/review
 .DS_Store
+
+.claude/worktrees/
