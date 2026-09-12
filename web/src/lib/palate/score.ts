@@ -130,6 +130,23 @@ export function lookupIngredient(name: string): Ingredient | null {
   return null;
 }
 
+/** Every ingredient the authored table can see in a line of menu text, longest name first.
+ *  Used to guess at a pasted menu without inventing anything: no match, no ingredient. */
+export function findIngredients(text: string): string[] {
+  const n = ` ${normalize(text)} `;
+  const found: string[] = [];
+  const taken: string[] = [];
+  for (const key of keysByLength) {
+    if (key.length < 4) continue;
+    if (!n.includes(` ${key} `) && !n.includes(` ${key}s `)) continue;
+    if (taken.some((t) => t.includes(key))) continue;
+    taken.push(key);
+    const name = index.get(key)!.name;
+    if (!found.includes(name)) found.push(name);
+  }
+  return found;
+}
+
 /* ------------------------------------------------------------------ vectors */
 
 export const zeroAxes = (): Axes => ({ coconut: 0, smoky: 0, sour: 0, herbal: 0, sweet: 0, fermented: 0 });
@@ -209,6 +226,17 @@ const sum = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a +
  *  0.30 similarity is the floor (nothing in common worth naming), 0.95 is a full match. */
 export const sharpen = (x: number): number => Math.max(0, Math.min(1, (x - 0.3) / 0.65));
 
+/** How much of what this diner keeps ordering actually shows up in the dish: the share of
+ *  their family weight that the dish has at least one ingredient for. -1 when we cannot say. */
+export function familyCoverage(p: Palate, v: DishVector): number {
+  const pw = palateFamilyWeights(p);
+  const total = sum(pw);
+  if (total === 0 || sum(v.families) === 0) return -1;
+  let covered = 0;
+  for (const f of AXES) if (pw[f] > 0 && v.families[f] > 0) covered += pw[f];
+  return covered / total;
+}
+
 /* ------------------------------------------------------------------ scoring */
 
 /** The ingredients that pulled the score up, strongest first — this is the reason line. */
@@ -261,9 +289,8 @@ export function scoreDish(p: Palate, dish: Dish, cleared?: string[]): Scored {
   }
 
   const axisCos = sharpen(cosine(p.axes, v.axes, AXES));
-  const pf = palateFamilyWeights(p);
-  const famCos = sum(pf) === 0 || sum(v.families) === 0 ? axisCos : sharpen(cosine(pf, v.families, AXES));
-  const score = Math.max(0, Math.min(100, Math.round(70 * axisCos + 30 * famCos)));
+  const cover = familyCoverage(p, v);
+  const score = Math.max(0, Math.min(99, Math.round(70 * axisCos + 30 * (cover < 0 ? axisCos : cover))));
   const hits = hitsFor(p, v);
   return {
     dish,
