@@ -5,6 +5,7 @@ import { isAppName } from '@/lib/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /** POST /api/rooms/{app}/{code}/act {name, payload, memberId} -> {doc, serverNow} */
 export async function POST(req: Request, { params }: { params: Promise<{ app: string; code: string }> }) {

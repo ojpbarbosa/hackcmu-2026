@@ -73,8 +73,11 @@ function local(h: SearchHit): boolean {
   return /pittsburgh|\bpgh\b|carnegie|cmu|\bpitt\b|oakland pa|squirrel hill|lawrenceville|shadyside|allegheny|strip district|bloomfield|east liberty/.test(t);
 }
 
+let contentsDisabled = false;
+
 /** POST /v1/contents: one page as text, with the LLM-highlighted event details and metadata. */
 async function fetchPage(url: string): Promise<{ text: string; og?: { image?: string } }> {
+  if (contentsDisabled) throw new Error('contents disabled (no plan)');
   const body = await querit<{
     results?: { url?: string; content?: string; highlights?: string[]; extrasMeta?: { title?: string; publishTime?: string; siteName?: string } }[];
   }>('/contents', {
@@ -83,6 +86,9 @@ async function fetchPage(url: string): Promise<{ text: string; og?: { image?: st
     crawlTimeout: 15,
     extrasMeta: true,
     highlights: { query: 'event date, time, venue, address, price, how to attend', maxCharacters: 2500 },
+  }).catch((e: unknown) => {
+    if (String(e).includes(' 403 ')) contentsDisabled = true;
+    throw e;
   });
   const r = body.results?.[0];
   const meta = r?.extrasMeta ? `Title: ${r.extrasMeta.title ?? ''}\nPublished: ${r.extrasMeta.publishTime ?? ''}\nSite: ${r.extrasMeta.siteName ?? ''}\n` : '';
@@ -167,8 +173,9 @@ export async function runScout(
     );
 
     const cards: Card[] = [];
-    for (const p of pages) {
-      if (!p) continue;
+    const extracted = await Promise.all(
+      pages.map(async (p, idx) => {
+      if (!p) return null;
       try {
         const out = await llm.json(
           'scout.extract',
@@ -177,9 +184,9 @@ export async function runScout(
         );
         const d = out.data;
         console.log('[scout] extract', p.hit.url.slice(0, 80), JSON.stringify(d).slice(0, 200));
-        if (!d.title.trim() || d.kind !== 'listed_event' || !soon(d.whenISO, now)) continue;
-        cards.push({
-          id: `card_${cards.length}_${Math.abs(Date.parse(d.whenISO ?? '') || cards.length)}`,
+        if (!d.title.trim() || d.kind !== 'listed_event' || !soon(d.whenISO, now)) return null;
+        return {
+          id: `card_${idx}_${Math.abs(Date.parse(d.whenISO ?? '') || idx)}`,
           title: d.title.trim(),
           whenISO: d.whenISO,
           where: d.where,
@@ -188,12 +195,14 @@ export async function runScout(
           source: p.hit.url,
           image: p.page.og?.image ?? p.hit.image,
           why: p.hit.snippet?.slice(0, 90) ?? `Close to ${keywords[0] ?? 'what you all said'}.`,
-        });
+        } as Card;
       } catch (e) {
         console.error('[scout] extract failed', p.hit.url, String(e).slice(0, 200));
+        return null;
       }
-      if (cards.length === 3) break;
-    }
+      }),
+    );
+    for (const c of extracted) if (c && cards.length < 3) cards.push(c);
 
     if (cards.length < 3) {
       const need = 3 - cards.length;
