@@ -168,13 +168,16 @@ export default function HatchPage() {
   const whoOn = covered[0];
   const othersOn = covered.slice(1).filter(Boolean).length;
   const nextAsk = CARDS[covered.findIndex((c) => !c) === -1 ? 0 : covered.findIndex((c) => !c)].ask;
-  const canDone = whoOn && transcript.trim().length >= 12;
+  const [sent, setSent] = useState(false);
+  const canDone = transcript.trim().length >= 12 && !sent;
 
   const hatch = useCallback(() => {
     if (sentRef.current) return;
     const t = transcript.trim();
     if (t.length < 12) return;
     sentRef.current = true;
+    setSent(true);
+    stop();
     void act('hatch', { transcript: t });
   }, [act, transcript]);
 
@@ -215,11 +218,6 @@ export default function HatchPage() {
     }
   }, [me, member, setName]);
 
-  useEffect(() => {
-    if (!me) return;
-    const t = setTimeout(() => router.push(withRoom('/familiars/web', code)), 6000);
-    return () => clearTimeout(t);
-  }, [me, router, code]);
 
   const hear = useCallback(async () => {
     if (!me) return;
@@ -343,8 +341,8 @@ export default function HatchPage() {
         </div>
       </div>
       <div className="bottom" style={{ alignItems: 'center', gap: 14 }}>
-        <button className="cta ghost" type="button" disabled={!canDone} onClick={hatch} style={{ alignSelf: 'stretch', opacity: canDone ? 1 : 0.45 }}>
-          Done
+        <button className="cta ghost" type="button" disabled={!canDone} onClick={hatch} style={{ alignSelf: 'stretch', opacity: canDone || sent ? 1 : 0.45 }}>
+          {sent ? 'Hatching…' : 'Done'}
         </button>
         {!typed && (
           <>

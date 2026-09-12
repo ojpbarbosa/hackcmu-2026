@@ -201,9 +201,18 @@ export default function WebHome() {
             <b>{missing.length} you keep missing</b>
           </Link>
         ) : null}
-        <Link className="cta glow gold" href={withRoom('/familiars/meet', code)}>
+        <button
+          className="cta glow gold"
+          type="button"
+          onClick={() => {
+            const C = (window as unknown as { DeviceMotionEvent?: { requestPermission?: () => Promise<unknown> } }).DeviceMotionEvent;
+            const go = () => router.push(withRoom('/familiars/meet', code));
+            if (C && typeof C.requestPermission === 'function') C.requestPermission().then(go, go);
+            else go();
+          }}
+        >
           Cast {me.name}
-        </Link>
+        </button>
       </div>
 
       <Tabs active="web" code={code} me={me} />

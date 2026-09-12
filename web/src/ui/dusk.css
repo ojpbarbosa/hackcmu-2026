@@ -84,7 +84,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 56px 20px 24px;
+  padding: 56px 20px calc(24px + env(safe-area-inset-bottom, 0px));
 }
 .scr.has-tabs,
 .has-tabs {
@@ -603,21 +603,22 @@
   position: relative;
   height: 250px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
 }
 .arc .ring {
+  --d: 230px;
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 230px;
-  height: 230px;
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
   border-radius: 50%;
   border: 1px solid var(--line);
-  transform: translate(-50%, -50%);
 }
-.arc .ring.r2 { width: 300px; height: 300px; opacity: 0.6; }
-.arc .ring.r3 { width: 370px; height: 370px; opacity: 0.35; }
+.arc .ring.r2 { --d: 300px; opacity: 0.6; }
+.arc .ring.r3 { --d: 370px; opacity: 0.35; }
 .near {
   position: absolute;
   display: flex;
@@ -1141,3 +1142,9 @@
   .hatch .egg .crit { --s: 118px !important; }
   .scr.flow .d2 { font-size: 26px; line-height: 29px; }
 }
+
+/* iOS Safari: keep the bottom controls above the toolbar */
+.bottom { bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+.scr.flow .bottom { padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+.tabs { padding-bottom: env(safe-area-inset-bottom, 0px); height: calc(110px + env(safe-area-inset-bottom, 0px)); }
+.has-tabs { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }

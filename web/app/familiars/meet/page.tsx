@@ -82,6 +82,15 @@ export default function MeetPage() {
     };
   }, []);
 
+  // entering the page is entering casting mode
+  const armedOnce = useRef(false);
+  useEffect(() => {
+    if (!me || armed || armedOnce.current) return;
+    armedOnce.current = true;
+    void act('arm');
+    void request();
+  }, [me, armed, act, request]);
+
   const enter = useCallback(async () => {
     // arm on the server first: the catch card must never depend on a sensor permission
     void act('arm');
@@ -252,8 +261,8 @@ export default function MeetPage() {
           </div>
         </div>
         <div className="bottom">
-          <button className="cta gold" type="button" onClick={() => void enter()}>
-            Enter casting mode
+          <button className="cta ghost" type="button" onClick={() => void enter()}>
+            {me ? 'Entering casting mode…' : 'Hatch first'}
           </button>
         </div>
       </div>
@@ -294,6 +303,11 @@ export default function MeetPage() {
         </div>
       </div>
       <div className="bottom">
+        {available && permission !== 'granted' && (
+          <button className="cta ghost" type="button" onClick={() => void request()}>
+            Turn on motion
+          </button>
+        )}
         {(!available || permission !== 'granted') && (
           <button className="cta gold" type="button" onClick={onSpike}>
             Wiggle
