@@ -1131,3 +1131,13 @@
 .web .tag { background: rgba(15, 17, 51, 0.72); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
 
 .dusk button.pill, .dusk a.pill { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: var(--glass2); border: 1px solid var(--line); font: 600 13px/1 var(--sys); color: var(--tx); }
+
+/* screens that must fit any phone height: flow instead of pinning, scroll when short */
+.scr.flow { display: flex; flex-direction: column; min-height: 100%; height: auto; }
+.scr.flow .top { position: static; }
+.scr.flow .bottom { position: static; margin-top: auto; padding-top: 22px; }
+.scr.flow .pad { margin-top: 10px !important; }
+@media (max-height: 760px) {
+  .hatch .egg .crit { --s: 118px !important; }
+  .scr.flow .d2 { font-size: 26px; line-height: 29px; }
+}

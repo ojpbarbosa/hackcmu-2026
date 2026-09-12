@@ -245,7 +245,7 @@ export default function HatchPage() {
   if (me) {
     const traits = salt ? traitsFor(`${me.id}:${salt + 1}`) : me.traits;
     return (
-      <div className="scr">
+      <div className="scr flow">
         <div className="top">
           <div className="pad" style={{ marginTop: 34, display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', textAlign: 'center' }}>
             <Creature traits={traits} size={220} mood={talkMood ? 'talk' : 'idle'} glow />
@@ -292,7 +292,7 @@ export default function HatchPage() {
 
   /* ------------------------------------------------------------------ talking */
   return (
-    <div className="scr hatch">
+    <div className="scr hatch flow">
       <div className="top">
         <div className="nav">
           <span className="pill">hatch</span>
@@ -308,7 +308,7 @@ export default function HatchPage() {
         <div className="pad" style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div className="egg" style={{ position: 'relative' }}>
             <Creature egg traits={traitsFor(member?.id ?? 'egg')} size={150} glow />
-            {tokens.map((t, i) => (
+            {tokens.slice(-TOK_POS.length).map((t, i) => (
               <span className="tok g" key={`${t}-${i}`} style={TOK_POS[i % TOK_POS.length]}>
                 {t}
               </span>
