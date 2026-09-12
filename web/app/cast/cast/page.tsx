@@ -6,7 +6,7 @@ import { Ring } from '../_components/Ring';
 import { WhoRow } from '../_components/WhoRow';
 import { NameSheet, useCastRoom, useTicker } from '../_components/useCastRoom';
 import { CAST_MS } from '@/lib/apps/cast';
-import { answeredCount, circle, isTyping, latestCast, openCast, personOf } from '../_components/model';
+import { answeredCount, castPeople, isTyping, latestCast, openCast } from '../_components/model';
 import { arm, land } from '../_components/reel';
 
 /** Screen 2 — the cast lands. One prompt, a ring, and who has cast so far. */
@@ -70,7 +70,7 @@ export default function CastLands() {
   }
 
   const now = serverNow();
-  const people = circle(members).map((m) => personOf(state, members, m.id));
+  const people = castPeople(state, members, shown, me);
   const mine = shown?.answers[me];
   const { n, of } = answeredCount(shown, members);
   const scheduledIn = state.scheduledAt ? state.scheduledAt - now : null;

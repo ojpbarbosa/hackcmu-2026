@@ -95,6 +95,20 @@ describe('cast reducer', () => {
     expect(Object.keys(latest(s).answers).sort()).toEqual([A.id, B.id, C.id]);
   });
 
+  it('does not let a phone that joined mid-cast hold the reveal up', async () => {
+    let s = cast.initial('TEST');
+    const late = { ...D, joinedAt: 5_000 };
+    s = await run(s, [A, B], 'castNow', {}, A.id, 1000);
+    const id = latest(s).id;
+    s = await run(s, [A, B, late], 'answer', { castId: id, text: 'one' }, A.id, 6000);
+    expect(latest(s).revealedAt).toBeNull();
+    s = await run(s, [A, B, late], 'answer', { castId: id, text: 'two' }, B.id, 7000);
+    expect(latest(s).revealedAt).toBe(7000); // the late phone is not counted
+    s = await run(s, [A, B, late], 'answer', { castId: id, text: 'late but welcome' }, late.id, 8000);
+    expect(latest(s).answers[late.id].text).toBe('late but welcome');
+    expect(latest(s).revealedAt).toBe(7000);
+  });
+
   it('ignores stage viewers when counting the reveal', async () => {
     const stage = member('stage-1', 'projector', 1);
     let s = cast.initial('TEST');

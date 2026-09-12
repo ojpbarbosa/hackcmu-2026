@@ -17,13 +17,22 @@ export function personOf(state: CastState | null, members: Member[], id: string)
   return { id, name: g?.name ?? 'someone', tone: g?.tone ?? 1, live: false };
 }
 
-/** Everyone whose answer belongs on this cast: the live circle, plus the authors
- *  of a seeded cast. `me` always sits first, as in the mockup. */
+/** Who the reveal waits for: the circle as it stood when the cast landed, so a
+ *  phone that scans the QR mid-cast cannot hold everyone else up. */
+export function waiting(members: Member[], cast: CastCast | null): Member[] {
+  const all = circle(members);
+  if (!cast) return all;
+  const present = all.filter((m) => m.joinedAt <= cast.openedAt);
+  return present.length ? present : all;
+}
+
+/** Everyone whose answer belongs on this cast: the circle that was here when it
+ *  landed, anyone who answered, and me. `me` sits first, as in the mockup. */
 export function castPeople(state: CastState | null, members: Member[], cast: CastCast | null, me: string): Person[] {
   if (!cast) return circle(members).map((m) => personOf(state, members, m.id));
   const ids = cast.seeded
     ? Object.keys(cast.answers)
-    : [...circle(members).map((m) => m.id), ...Object.keys(cast.answers)];
+    : [...waiting(members, cast).map((m) => m.id), ...Object.keys(cast.answers), ...(me ? [me] : [])];
   const seen = new Set<string>();
   const people = ids
     .filter((id) => (seen.has(id) ? false : (seen.add(id), true)))
@@ -52,7 +61,7 @@ export const openPlan = (state: CastState | null): CastPlan | null =>
 export function answeredCount(cast: CastCast | null, members: Member[]): { n: number; of: number } {
   if (!cast) return { n: 0, of: circle(members).length };
   if (cast.seeded) return { n: Object.keys(cast.answers).length, of: 4 };
-  const ids = circle(members).map((m) => m.id);
+  const ids = waiting(members, cast).map((m) => m.id);
   return { n: ids.filter((id) => cast.answers[id]).length, of: ids.length };
 }
 

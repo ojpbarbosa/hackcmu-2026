@@ -84,6 +84,14 @@ function roster(ctx: Ctx): Member[] {
     .sort((a, b) => a.joinedAt - b.joinedAt);
 }
 
+/** Who the reveal waits for: the circle as it stood when the cast landed. A phone
+ *  that scans the QR mid-cast can still answer, but it cannot hold the reveal up. */
+function waitingFor(ctx: Ctx, openedAt: number): Member[] {
+  const all = roster(ctx);
+  const present = all.filter((m) => m.joinedAt <= openedAt);
+  return present.length ? present : all;
+}
+
 function nameOf(state: CastState, ctx: Ctx, id: string): string {
   return ctx.members[id]?.name ?? state.ghosts[id]?.name ?? 'someone';
 }
@@ -396,7 +404,7 @@ export const cast: AppDef<CastState> = {
         if (!target || target.seeded || !text || isViewer(me)) return state;
 
         const answers = { ...target.answers, [me]: { text, at } };
-        const ids = roster(ctx).map((m) => m.id);
+        const ids = waitingFor(ctx, target.openedAt).map((m) => m.id);
         const everyone = ids.length > 0 && ids.every((id) => answers[id]);
         const revealedAt = target.revealedAt ?? (everyone ? at : null);
         const next: CastState = {
