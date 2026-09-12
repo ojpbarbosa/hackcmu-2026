@@ -138,17 +138,17 @@ img,svg{max-width:100%}
 
 /* ============ FAMILIARS : accent emerald ============ */
 .app-fam{--g1:#34D399;--g2:#10B981;--g3:#059669;--acc:#10B981}
-.orb{width:168px;height:168px;border-radius:50%;margin:0 auto;position:relative;
+.app-fam .orb{width:168px;height:168px;border-radius:50%;margin:0 auto;position:relative;
   background:radial-gradient(circle at 35% 30%,#D1FAE5 0%,#6EE7B7 30%,#10B981 62%,#065F46 100%);
   box-shadow:0 20px 40px -12px rgba(16,185,129,.45),inset 0 -14px 24px rgba(0,0,0,.18),inset 0 8px 16px rgba(255,255,255,.35)}
-.orb::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(16,185,129,.25)}
-.orb.sm{width:96px;height:96px;margin:0}
-.orb.other{background:radial-gradient(circle at 35% 30%,#E0E7FF 0%,#A5B4FC 30%,#6366F1 62%,#312E81 100%);box-shadow:0 20px 40px -12px rgba(99,102,241,.45),inset 0 -14px 24px rgba(0,0,0,.18),inset 0 8px 16px rgba(255,255,255,.35)}
-.orb.other::after{border-color:rgba(99,102,241,.25)}
-.orb.ghost{background:radial-gradient(circle at 35% 30%,#F3F4F6 0%,#D1D5DB 30%,#9CA3AF 62%,#4B5563 100%);box-shadow:0 20px 40px -12px rgba(75,85,99,.3),inset 0 -14px 24px rgba(0,0,0,.14),inset 0 8px 16px rgba(255,255,255,.3)}
-.orb.ghost::after{border-color:rgba(107,114,128,.3);border-style:dashed}
-.orb .mono{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 40px/1 var(--disp);color:#fff;letter-spacing:-.02em;text-shadow:0 2px 6px rgba(0,0,0,.25)}
-.orb.sm .mono{font-size:24px}
+.app-fam .orb::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(16,185,129,.25)}
+.app-fam .orb.sm{width:96px;height:96px;margin:0}
+.app-fam .orb.other{background:radial-gradient(circle at 35% 30%,#E0E7FF 0%,#A5B4FC 30%,#6366F1 62%,#312E81 100%);box-shadow:0 20px 40px -12px rgba(99,102,241,.45),inset 0 -14px 24px rgba(0,0,0,.18),inset 0 8px 16px rgba(255,255,255,.35)}
+.app-fam .orb.other::after{border-color:rgba(99,102,241,.25)}
+.app-fam .orb.ghost{background:radial-gradient(circle at 35% 30%,#F3F4F6 0%,#D1D5DB 30%,#9CA3AF 62%,#4B5563 100%);box-shadow:0 20px 40px -12px rgba(75,85,99,.3),inset 0 -14px 24px rgba(0,0,0,.14),inset 0 8px 16px rgba(255,255,255,.3)}
+.app-fam .orb.ghost::after{border-color:rgba(107,114,128,.3);border-style:dashed}
+.app-fam .orb .mono{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 40px/1 var(--disp);color:#fff;letter-spacing:-.02em;text-shadow:0 2px 6px rgba(0,0,0,.25)}
+.app-fam .orb.sm .mono{font-size:24px}
 .app-fam .seeds{display:flex;flex-direction:column;gap:8px}
 .app-fam .seed{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:14px;padding:10px 12px;box-shadow:var(--sh-soft);font:500 14px/19px var(--sys);color:var(--t1)}
 .app-fam .seed i{width:8px;height:8px;border-radius:50%;background:var(--acc);flex:0 0 auto}
