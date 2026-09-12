@@ -65,17 +65,25 @@
   }
 }
 @media (max-width: 499px) {
+  .dusk {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
   .device {
     width: 100%;
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
   }
 }
 
 .scr {
   position: relative;
   width: 100%;
-  min-height: 100%;
-  overflow: hidden;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 56px 20px 24px;
 }
 .scr.has-tabs,
