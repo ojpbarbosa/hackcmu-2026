@@ -38,6 +38,8 @@ export type PalateState = {
   /** one palate per member; the table merge is a function of this map */
   palates: Record<string, Palate>;
   menuId: string | null;
+  /** when this room last pointed at a menu — the "read 19:31" line */
+  menuAt: number | null;
   pastedMenu: PastedMenu | null;
   /** what the kitchen has answered, per dish */
   known: Known;
@@ -53,6 +55,7 @@ export const initialState = (code: string): PalateState => ({
   code,
   palates: {},
   menuId: null,
+  menuAt: null,
   pastedMenu: null,
   known: {},
   reasons: {},
@@ -141,13 +144,16 @@ async function reduce(state: PalateState, action: Action, ctx: Ctx): Promise<Pal
       const families = data.families
         .filter((f) => f.label)
         .map((f) => ({ label: f.label, count: Math.max(1, Math.round(f.count)), key: familyKeyFor(f.label) }));
-      return { ...state, palates: { ...state.palates, [me]: { axes, families, never, loved } } };
+      // a new palate invalidates the lines written for the old one
+      const reasons = { ...state.reasons };
+      delete reasons[me];
+      return { ...state, palates: { ...state.palates, [me]: { axes, families, never, loved } }, reasons };
     }
 
     case 'pickMenu': {
       const menuId = typeof p.menuId === 'string' ? p.menuId : null;
       if (!getMenu(menuId)) return state;
-      return { ...state, menuId, pastedMenu: null, order: [], orderedAt: null };
+      return { ...state, menuId, menuAt: action.now, pastedMenu: null, order: [], orderedAt: null };
     }
 
     /** paste any menu, in any language; the model parses it, we never guess an ingredient. */
@@ -176,6 +182,7 @@ async function reduce(state: PalateState, action: Action, ctx: Ctx): Promise<Pal
       return {
         ...state,
         menuId: null,
+        menuAt: action.now,
         pastedMenu: {
           id: 'pasted',
           restaurant: data.restaurant?.trim() || 'Pasted menu',
