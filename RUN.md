@@ -137,6 +137,76 @@ hidden); an unchanged room answers `304`. Writes go through
 7. Open the launcher on the projector, create the four rooms, and leave the QR codes up.
 8. `pnpm shots` and look at the five PNGs in `web/.shots` — no horizontal scroll, no overlap.
 
+## Demo scripts (production URLs; swap the origin for the LAN URL when running on the laptop)
+
+Every app takes `?room=CODE`. Open the stage view on the projector first, then the phones.
+Query aids exist only for demos and screenshots; they are not user features.
+
+### Cast · Multiplayer
+
+1. Projector: `/cast/stage?room=BASEMENT`
+2. Phones (3–4): `/cast?room=BASEMENT` → type a name → "Join the circle".
+3. Presenter taps **Cast now** on any phone → every phone lands on the cast (buzz + tone if the
+   join tap happened first), ring counts down from 1:30.
+4. Everyone answers → the last answer unlocks the reveal on every phone (`/cast/tonight`).
+5. **Schedule in 2 min** shows the unpredictable-time behaviour; the pond (`/cast/pond`) shows the
+   seeded 14-day history; catch mode: tap "See the catch" after a reveal in catch mode, pull the line
+   on 3 phones → "Caught · invite sent" → "Add to calendar" downloads an .ics.
+6. Aids: `?as=Name&id=fixed` opens a phone as a fixed identity; the stage's "why this cast" lists the
+   model's reasons and the ladder shows who answered.
+
+### Familiars · Multiplayer (the bump)
+
+1. Projector: `/familiars/stage?room=HACKCMU` (add `&demo=1` to fill a thin room with 40 authored villagers).
+2. Phones: `/familiars?room=HACKCMU` → name, three answers, where you're sitting → **Hatch my familiar**.
+3. Both phones: **Bump a phone to meet** → **Bump a phone** → allow motion (iOS asks once) → knock
+   the phones together once, firmly. Threshold 14 m/s² above gravity; the on-screen bar shows the
+   live reading and the threshold marker.
+4. Both screens: the two orbs meet, four lines stream in, then the "you both" card with the other
+   human's name and seat. **We talked** returns to the familiar.
+5. `/familiars/night` writes the night from the graph; `/familiars/away` shows the closest person
+   you never bumped; **Find them now** reveals their seat.
+6. Fallback: "or key an address · XYZ is yours" pairs by typing the other phone's 3-character address.
+7. Requirements: HTTPS (Vercel, or `cloudflared tunnel --url http://localhost:3000` in front of the
+   laptop); on Vercel finish the Upstash step first or the two phones may land on different instances.
+8. Aids: `?simulate=1` fakes a knock from the tap (`&auto=1` arms on load); `/familiars/dev?room=CODE&to=/familiars/me`
+   seeds a room and adopts the first identity.
+
+### Detour · Traveling (or Optimization)
+
+1. Projector: `/detour/stage?room=OAK42` ("waiting for a phone to set out").
+2. Phone: `/detour?room=OAK42&demo=1` → 45 min, end at Tepper School, mood "somewhere new" →
+   **Start walking**. Without `demo=1` the phone uses real geolocation (HTTPS needed).
+3. The replay walks the hidden route at 20× (about 100 s); the stage follows the walker and
+   highlights each nudge as it is spent. A judge taps the map → the wall sheet → **Keep walking**.
+4. Arrival routes to `/detour/done` with the route revealed, the story card and **Save the walk**
+   (saved places count as "visited" next time).
+5. Aids: `/detour/walk?room=OAK42&demo=1` plans a Gates → Tepper walk cold; `&speed=60` finishes in
+   ~35 s; a second phone on `/detour/walk?room=OAK42` (no demo) spectates.
+6. Known: `pnpm shots` cannot render the map (headless Brave without WebGL); the app degrades to a
+   projection so fog, marker and cards still show. Real phones render tiles from OpenFreeMap (no key).
+
+### Palate · Food
+
+1. Projector: `/palate/stage?room=TABLE4`.
+2. Phone A: `/palate?room=TABLE4` → name, five dishes you love, "never" allergens (pick sesame for
+   the demo) → **Build my palate** → petal chart on `/palate/me` → **Point at a menu** → Bangkok Balcony.
+3. The menu ranks with a reason per dish; the house special is grey with **Ask**; anything with
+   sesame is blocked with "never".
+4. Phones B and C join the same room and build palates; `/palate/table` shows "everyone will love",
+   "splits the table", "off the table", and **Build the table's order · $**.
+5. **Ask** → the chef card in Thai (Portuguese for Tasca Lisboa) → **They said no sesame** → the dish
+   becomes scorable.
+6. Aids: any palate route accepts `?as=<id>&name=<name>&tone=<1-4>` so one laptop can play three
+   seats; "Paste a menu" parses free text (mock parser without a key).
+
+## Known gaps to say out loud if asked
+
+- Model calls are attributed honestly: with no key the ladder says `mock`. Paste the IFM key to go live.
+- On Vercel without Upstash, multi-phone rooms are unreliable (per-instance memory). Laptop LAN or Upstash.
+- Detour's route lives in the room document (readable with devtools); it is hidden by design, not encryption.
+- Camera OCR for menus and on-device small models are not built; copy says so.
+
 ## What the app agents own
 
 | path | owner |
