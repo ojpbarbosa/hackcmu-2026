@@ -274,7 +274,12 @@ export default function BumpPage() {
             {phase === 'sensing' ? 'listening…' : phase === 'waiting' ? 'pairing…' : 'Bump a phone'}
           </CTA>
         )}
-        <button type="button" className="bsm" style={{ textAlign: 'center' }} onClick={() => setSheet(true)}>
+        <button
+          type="button"
+          className="bsm"
+          style={{ minHeight: 44, width: '100%', textAlign: 'center' }}
+          onClick={() => setSheet(true)}
+        >
           {me ? `or key an address · ${me.address} is yours` : 'or key an address'}
         </button>
       </div>

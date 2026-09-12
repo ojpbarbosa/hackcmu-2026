@@ -101,7 +101,7 @@ export default function NightPage() {
         <button
           type="button"
           className="bsm"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%' }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', minHeight: 44 }}
           onClick={() => router.push(withRoom('/familiars/bump', code))}
         >
           <Icon name="phone" size={14} className="xs" />

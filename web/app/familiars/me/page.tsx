@@ -112,7 +112,12 @@ export default function MePage() {
         <CTA variant="grad" icon="phone" onClick={() => router.push(withRoom('/familiars/bump', code))}>
           Bump a phone to meet
         </CTA>
-        <button type="button" className="bsm" style={{ textAlign: 'center' }} onClick={() => setSheet(true)}>
+        <button
+          type="button"
+          className="bsm"
+          style={{ minHeight: 44, width: '100%', textAlign: 'center' }}
+          onClick={() => setSheet(true)}
+        >
           or key an address · {me.address} is yours
         </button>
       </div>
