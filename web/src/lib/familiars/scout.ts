@@ -249,20 +249,34 @@ export async function rawQuerit(path: string, body: unknown): Promise<{ status: 
 }
 
 /** For /api/scout/debug: the raw provider calls, so a failure is visible without logs. */
-export async function debugQuerit(q: string): Promise<{ keyPresent: boolean; base: string; search?: unknown; contents?: unknown; error?: string }> {
-  const out: { keyPresent: boolean; base: string; search?: unknown; contents?: unknown; error?: string } = {
+export async function debugQuerit(q: string): Promise<{
+  keyPresent: boolean;
+  base: string;
+  search?: unknown;
+  searchError?: string;
+  contents?: unknown;
+  contentsError?: string;
+  note: string;
+}> {
+  const out: Awaited<ReturnType<typeof debugQuerit>> = {
     keyPresent: !!process.env.QUERIT_API_KEY,
     base: QUERIT_BASE(),
+    note: 'search is what the scout needs; contents is optional (page text comes from search sentences when it is unavailable)',
   };
+  let hits: SearchHit[] = [];
   try {
-    const hits = await search(q);
-    out.search = hits.slice(0, 3);
-    if (hits[0]) {
-      const page = await fetchPage(hits[0].url);
-      out.contents = { url: hits[0].url, chars: page.text.length, head: page.text.slice(0, 400) };
-    }
+    hits = await search(q);
+    out.search = hits.slice(0, 3).map((h) => ({ ...h, text: h.text ? `${h.text.slice(0, 200)}…` : undefined, local: local(h) }));
   } catch (e) {
-    out.error = String(e instanceof Error ? e.message : e).slice(0, 400);
+    out.searchError = String(e instanceof Error ? e.message : e).slice(0, 400);
+  }
+  if (hits[0]) {
+    try {
+      const page = await fetchPage(hits[0].url);
+      out.contents = { url: hits[0].url, chars: page.text.length, head: page.text.slice(0, 300) };
+    } catch (e) {
+      out.contentsError = String(e instanceof Error ? e.message : e).slice(0, 300);
+    }
   }
   return out;
 }
