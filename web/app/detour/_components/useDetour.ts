@@ -42,11 +42,13 @@ export function saveVisited(ids: string[]): void {
   }
 }
 
-/** The room, this phone's identity, and this phone's walk. */
-export function useDetour() {
+/** The room, this phone's identity, and this phone's walk.
+ *  `passive` is for the projector: it watches the room without joining it. */
+export function useDetour(opts?: { passive?: boolean }) {
+  const passive = !!opts?.passive;
   const [code, setCode] = useState<string | null>(null);
   const { member, setName } = useMember();
-  const room = useRoom<DetourState>('detour', code, member);
+  const room = useRoom<DetourState>('detour', code, passive ? null : member);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -95,8 +97,8 @@ export function useDetour() {
 
   // a walk needs no sign-up; the phone names itself so the stage has something to show
   useEffect(() => {
-    if (!member) setName('walker');
-  }, [member, setName]);
+    if (!member && !passive) setName('walker');
+  }, [member, passive, setName]);
 
   const walk: DetourWalk | null = useMemo(
     () => (member && room.state ? (room.state.walks[member.id] ?? null) : null),

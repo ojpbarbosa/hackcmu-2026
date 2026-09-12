@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { bearing, haversine, lerpLatLng, type LatLng } from '@/lib/detour/geo';
 
 export const BASE_SPEED = 1.4; // m/s
+const WARMUP_MS = 1200;
 
 export type WalkerLeg = { path: LatLng[] };
 
@@ -72,14 +73,15 @@ export function useWalker(opts: {
     { pos: samples.length ? samples[0].p : null, heading: 0, legIndex: 0, arrived: false, walkedM: 0 },
   );
 
-  // demo replay: walk the planned route at 1.4 m/s × speed
+  // demo replay: walk the planned route at 1.4 m/s × speed. The first second is
+  // spent standing still so the map has its tiles before the walker moves.
   useEffect(() => {
     if (!demo || !active || !samples.length) return;
     let raf = 0;
     let lastPush = 0;
-    const t0 = performance.now();
+    const t0 = performance.now() + WARMUP_MS;
     const step = (now: number) => {
-      const walked = Math.min(totalM, ((now - t0) / 1000) * BASE_SPEED * speed);
+      const walked = Math.min(totalM, Math.max(0, ((now - t0) / 1000) * BASE_SPEED * speed));
       const hit = at(samples, walked);
       posRef.current = hit.p;
       const arrived = walked >= totalM - 0.5;

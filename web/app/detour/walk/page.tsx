@@ -6,6 +6,7 @@ import { haversine, type LatLng } from '@/lib/detour/geo';
 import { FogMap } from '../_components/FogMap';
 import { NudgeCard } from '../_components/NudgeCard';
 import { useDetour, useQuery } from '../_components/useDetour';
+import { useSmoothed } from '../_components/useSmoothed';
 import { useWalker } from '../_components/useWalker';
 
 const clock = (t: number) =>
@@ -40,7 +41,7 @@ export default function DetourWalk() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one walk, one set of legs
     [walkId],
   );
-  const active = !!walk && !walk.endedAt;
+  const active = !!walk && !walk.endedAt && !spectator;
 
   const onTick = useCallback(
     (s: { pos: LatLng; heading: number; legIndex: number; arrived: boolean }) => {
@@ -63,13 +64,18 @@ export default function DetourWalk() {
   );
 
   const walker = useWalker({ legs, demo, speed, active, onTick });
+  // watching someone else's walk: the position comes from the room, not from here
+  const watched = useSmoothed(spectator && walk ? [walk.progress.lat, walk.progress.lng] : null);
+  const posRef = spectator ? watched : walker.posRef;
+  const pos = spectator && walk ? ([walk.progress.lat, walk.progress.lng] as LatLng) : walker.pos;
 
-  // the demo can start cold: /detour/walk?demo=1 plans a walk if the room has none
+  // the demo can start cold: /detour/walk?demo=1 plans this phone a walk of its own,
+  // even in a room where someone else has already walked
   useEffect(() => {
-    if (!demo || walk || !code || !member || autoStarted.current) return;
+    if (!demo || mine || !code || !member || autoStarted.current) return;
     autoStarted.current = true;
     void act('start', { startVenue: 'Gates Center', endpointName: 'Tepper School', budgetMin: 45, mood: 'somewhere new' });
-  }, [act, code, demo, member, walk]);
+  }, [act, code, demo, member, mine]);
 
   // every time the phone comes back into view, that is a look; so is opening the walk
   useEffect(() => {
@@ -83,13 +89,13 @@ export default function DetourWalk() {
   }, [act, spectator, walkId]);
 
   const legIndex = Math.min(
-    Math.max(walker.legIndex, manualIndex, walk?.progress.legIndex ?? 0),
+    Math.max(spectator ? 0 : walker.legIndex, spectator ? 0 : manualIndex, walk?.progress.legIndex ?? 0),
     Math.max(0, legs.length - 1),
   );
   const nudge = walk?.nudges[legIndex] ?? 'keep going until something changes';
 
   const endOfLeg = legs[legIndex]?.path.slice(-1)[0] ?? null;
-  const ready = demo || (!!walker.pos && !!endOfLeg && haversine(walker.pos, endOfLeg) < 30);
+  const ready = demo || (!!pos && !!endOfLeg && haversine(pos, endOfLeg) < 30);
 
   const gotIt = useCallback(() => {
     const next = Math.min(legIndex + 1, Math.max(0, legs.length - 1));
@@ -141,9 +147,9 @@ export default function DetourWalk() {
           follow
           fog
           radiusM={100}
-          posRef={walker.posRef}
-          position={walker.pos ?? start}
-          heading={walker.heading}
+          posRef={posRef}
+          position={pos ?? start}
+          heading={spectator ? (walk?.progress.heading ?? 0) : walker.heading}
           onTap={() => setWall(true)}
         />
 

@@ -1,37 +1,17 @@
 'use client';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { StagePage, ModelLadder, H3, Body, Label, Pill } from '@/ui';
 import type { LatLng } from '@/lib/detour/geo';
 import { FogMap } from '../_components/FogMap';
 import { useDetour } from '../_components/useDetour';
+import { useSmoothed } from '../_components/useSmoothed';
 
 const STAGE_PADDING = { top: 64, bottom: 64, left: 72, right: 72 };
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 
-/** Ease the projector's marker between the phone's position reports. */
-function useSmoothed(target: LatLng | null) {
-  const ref = useRef<LatLng | null>(target);
-  const goal = useRef<LatLng | null>(target);
-  goal.current = target;
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      const g = goal.current;
-      if (g) {
-        const cur = ref.current;
-        ref.current = cur ? [cur[0] + (g[0] - cur[0]) * 0.08, cur[1] + (g[1] - cur[1]) * 0.08] : g;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-  return ref;
-}
-
 export default function DetourStage() {
-  const { state, code, events, members } = useDetour();
+  const { state, code, events, members } = useDetour({ passive: true });
 
   const walk = state?.focus ? (state.walks[state.focus] ?? null) : (Object.values(state?.walks ?? {})[0] ?? null);
 
