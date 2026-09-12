@@ -158,7 +158,7 @@ export default function MeetPage() {
     const speaker = line ? (line.who === 'a' ? famA : famB) : null;
     const done = shown >= pair.lines.length;
     return (
-      <div className="scr meet">
+      <div className="scr meet flow">
         <div className="top">
           <div className="nav">
             <span />
@@ -214,7 +214,7 @@ export default function MeetPage() {
 
   if (incoming && theirs && dismissed !== incoming.id) {
     return (
-      <div className="scr">
+      <div className="scr flow">
         <div className="top">
           <div className="nav">
             <span className="pill">
@@ -267,7 +267,7 @@ export default function MeetPage() {
   /* ------------------------------------------------------------- not armed */
   if (!armed) {
     return (
-      <div className="scr">
+      <div className="scr flow">
         <div className="top">
           <div className="nav">
             <span className="pill">meet</span>
@@ -290,7 +290,7 @@ export default function MeetPage() {
   /* ------------------------------------------------------ catch card on top */
   /* ---------------------------------------------------------- casting mode */
   return (
-    <div className="scr">
+    <div className="scr flow">
       <div className="top">
         <div className="nav">
           <span className="pill">
