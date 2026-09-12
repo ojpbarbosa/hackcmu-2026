@@ -91,6 +91,8 @@ export default function PalateMe() {
             <H3>the table is reading a menu</H3>
             <Body>
               <Link href={href('/palate/menu')}>open it, ranked for you</Link>
+              {' · '}
+              <Link href={href('/palate/table')}>see the table</Link>
             </Body>
           </div>
         ) : null}
