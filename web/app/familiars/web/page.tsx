@@ -44,13 +44,14 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
   const fofIds = friendsOfFriends(state, meId);
   const fn = Math.max(fofIds.length, 1);
   const fof: Placed[] = fofIds.map((id, i) => {
-    const a = Math.PI - ((i + 0.5) / fn) * Math.PI;
+    // the outer arc only spans the top half-circle so the dots never sit where the edge labels lift
+    const a = Math.PI * 0.8 - ((i + 0.5) / fn) * Math.PI * 0.6;
     return {
       id,
       label: null,
       fam: state.familiars[id] ?? null,
-      x: Math.min(350, Math.max(23, CX + 232 * Math.cos(a))),
-      y: CY - 232 * Math.sin(a),
+      x: CX + 240 * Math.cos(a),
+      y: CY - 240 * Math.sin(a),
     };
   });
   return { met, fof, tags };
