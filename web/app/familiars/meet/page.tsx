@@ -330,6 +330,11 @@ export default function MeetPage() {
             Turn on motion
           </button>
         )}
+        {(available && permission === 'granted') && !pulsing && !caught && (
+          <button className="cta ghost" type="button" onClick={onSpike}>
+            Cast without wiggling
+          </button>
+        )}
         {(!available || permission !== 'granted') && (
           <button className="cta gold" type="button" onClick={onSpike}>
             Wiggle

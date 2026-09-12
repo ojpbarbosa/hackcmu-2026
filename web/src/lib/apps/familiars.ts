@@ -72,6 +72,36 @@ export type FamState = {
 
 export const CAST_TTL_MS = 20000;
 const ARM_TTL_MS = 10 * 60 * 1000;
+const MUTUAL_MS = 8000;
+const RECENT_PAIR_MS = 90_000;
+
+function recentPair(state: FamState, x: string, y: string, now: number): Pair | null {
+  return (
+    [...state.pairs].reverse().find((p) => ((p.a === x && p.b === y) || (p.a === y && p.b === x)) && now - p.at < RECENT_PAIR_MS) ?? null
+  );
+}
+
+/** Both phones end up in the same duet no matter which one moved: clears both casts,
+ *  disarms both, and never writes a second pair for the same two people in a row. */
+async function pairUp(state: FamState, ctx: Ctx, castId: string, casterId: string, catcherId: string, now: number): Promise<FamState> {
+  const a = state.familiars[casterId];
+  const b = state.familiars[catcherId];
+  if (!a || !b || a.id === b.id) return state;
+  const pendingCasts = state.pendingCasts.filter((c) => c.from !== a.id && c.from !== b.id);
+  const casting = { ...state.casting };
+  delete casting[a.id];
+  delete casting[b.id];
+  if (recentPair(state, a.id, b.id, now)) return { ...state, pendingCasts, casting };
+  const { data } = await ctx.llm.json('familiars.exchange', { a: side(a), b: side(b), shared: sharedKeywords(a, b) }, {
+    app: ctx.app,
+    code: ctx.code,
+    schema: ExchangeOut,
+    effort: 'low',
+    maxTokens: 1200,
+  });
+  return { ...state, pendingCasts, casting, pairs: [...state.pairs, makePair(`pair_${castId}`, a, b, now, data)] };
+}
+
 const SCOUT_COOLDOWN_MS = 60_000;
 const NAME_OK = /^[A-Z][a-z]{2,11}$/;
 
@@ -416,6 +446,11 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
 
     case 'wiggle': {
       if (!state.casting[me] || !state.familiars[me]) return state;
+      // someone else cast in the last few seconds: that is a mutual wiggle, pair now, no tap
+      const mate = state.pendingCasts
+        .filter((c) => c.from !== me && action.now - c.at < MUTUAL_MS && !!state.familiars[c.from])
+        .sort((x, y) => y.at - x.at)[0];
+      if (mate) return pairUp(state, ctx, mate.id, mate.from, me, action.now);
       const pendingCasts = state.pendingCasts.filter((c) => c.from !== me);
       pendingCasts.push({ id: `cast_${me}_${action.now}`, from: me, at: action.now });
       return { ...state, pendingCasts };
@@ -425,24 +460,7 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
       const cast = state.pendingCasts.find((c) => c.id === String(p.castId ?? ''));
       if (!cast || cast.from === me) return state;
       if (action.now - cast.at >= CAST_TTL_MS) return state;
-      const a = state.familiars[cast.from];
-      const b = state.familiars[me];
-      if (!a || !b) return state;
-      // one pair per catch, so the same two people can meet again tomorrow
-      const id = `pair_${cast.id}`;
-      const pendingCasts = state.pendingCasts.filter((c) => c.id !== cast.id);
-      const casting = { ...state.casting };
-      delete casting[a.id];
-      delete casting[b.id];
-      if (state.pairs.some((x) => x.id === id)) return { ...state, pendingCasts, casting };
-      const { data } = await ctx.llm.json('familiars.exchange', { a: side(a), b: side(b), shared: sharedKeywords(a, b) }, {
-        app: ctx.app,
-        code: ctx.code,
-        schema: ExchangeOut,
-        effort: 'low',
-        maxTokens: 1200,
-      });
-      return { ...state, pendingCasts, casting, pairs: [...state.pairs, makePair(id, a, b, action.now, data)] };
+      return pairUp(state, ctx, cast.id, cast.from, me, action.now);
     }
 
     case 'talked': {
