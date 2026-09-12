@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Creature } from '../_components/Creature';
 import { Tabs } from '../_components/Tabs';
+import { IncomingCast } from '../_components/IncomingCast';
 import { useFamiliars, withRoom } from '../_components/useFamiliars';
 import { metIds, webGroups } from '@/lib/apps/familiars';
 
@@ -195,6 +196,7 @@ export default function YouPage() {
           Delete {me.name} and start over
         </button>
       </div>
+      <IncomingCast state={state} me={me} act={act} code={code} />
       <Tabs active="you" code={code} me={me} />
     </div>
   );

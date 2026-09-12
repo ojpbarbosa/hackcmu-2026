@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Creature } from '../_components/Creature';
 import { Deck, whenLabel } from '../_components/Deck';
 import { Tabs } from '../_components/Tabs';
+import { IncomingCast } from '../_components/IncomingCast';
 import { useFamiliars, withRoom } from '../_components/useFamiliars';
 import { useRecorder } from '../_components/useRecorder';
 import { isMatch } from '@/lib/apps/familiars';
@@ -186,6 +187,7 @@ export default function CastsPage() {
             </a>
           ) : null}
         </div>
+        <IncomingCast state={state} me={me} act={act} code={code} />
         <Tabs active="casts" code={code} me={me} />
       </div>
     );
@@ -389,6 +391,8 @@ export default function CastsPage() {
           </button>
         </div>
       ) : null}
+
+      <IncomingCast state={state} me={me} act={act} code={code} />
 
       <Tabs active="casts" code={code} me={me} />
     </div>

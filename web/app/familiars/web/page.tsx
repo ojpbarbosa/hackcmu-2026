@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Creature } from '../_components/Creature';
 import { Tabs } from '../_components/Tabs';
+import { IncomingCast } from '../_components/IncomingCast';
 import { useFamiliars, withRoom } from '../_components/useFamiliars';
 import { friendsOfFriends, keepMissing, metIds, webGroups } from '@/lib/apps/familiars';
 import type { Familiar, FamState } from '@/lib/apps/familiars';
 import { traitsFor, PALETTE, HUES } from '@/lib/familiars/creature';
 
 const CX = 186;
-const CY = 380;
+const CY = 318;
 
 type Placed = { id: string; x: number; y: number; label: string | null; fam: Familiar | null };
 
@@ -22,7 +23,7 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
   const n = Math.max(flat.length, 1);
   const met: Placed[] = flat.map((entry, i) => {
     const a = Math.PI - ((i + 0.5) / n) * Math.PI;
-    const r = i % 2 === 0 ? 156 : 118;
+    const r = i % 2 === 0 ? 136 : 104;
     return {
       id: entry.id,
       label: entry.label,
@@ -36,9 +37,9 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
   for (const g of groups) {
     const mid = cursor + g.members.length / 2;
     const a = Math.PI - (mid / n) * Math.PI;
-    const rawX = CX + 200 * Math.cos(a);
+    const rawX = CX + 172 * Math.cos(a);
     const clamped = rawX < 48 || rawX > 325;
-    tags.push({ label: g.label, x: Math.min(325, Math.max(48, rawX)), y: CY - 200 * Math.sin(a) - (clamped ? 44 : 0) });
+    tags.push({ label: g.label, x: Math.min(325, Math.max(48, rawX)), y: CY - 172 * Math.sin(a) - (clamped ? 40 : 0) });
     cursor += g.members.length;
   }
   const fofIds = friendsOfFriends(state, meId);
@@ -50,8 +51,8 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
       id,
       label: null,
       fam: state.familiars[id] ?? null,
-      x: CX + 240 * Math.cos(a),
-      y: CY - 240 * Math.sin(a),
+      x: CX + 202 * Math.cos(a),
+      y: CY - 202 * Math.sin(a),
     };
   });
   // one soft nebula per group, in the hue of its first familiar
@@ -76,7 +77,7 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
 
 export default function WebHome() {
   const router = useRouter();
-  const { code, state, me } = useFamiliars();
+  const { code, state, me, act } = useFamiliars();
 
   useEffect(() => {
     if (state && !me) router.replace(withRoom('/familiars', code));
@@ -157,7 +158,7 @@ export default function WebHome() {
         {graph.nebs.map((n, i) => (
           <div className="neb" key={i} style={{ left: n.x - 90, top: n.y - 80, width: 180, height: 160, background: n.color }} />
         ))}
-        <svg viewBox="0 0 373 470" aria-hidden="true">
+        <svg viewBox="0 0 373 400" aria-hidden="true">
           {graph.links.map((l, i) => (
             <path
               key={`l${i}`}
@@ -214,7 +215,7 @@ export default function WebHome() {
         ))}
 
         {empty ? (
-          <p className="s mute" style={{ position: 'absolute', left: 0, right: 0, top: 150, textAlign: 'center' }}>
+          <p className="s mute" style={{ position: 'absolute', left: 0, right: 0, top: 120, textAlign: 'center' }}>
             Meet someone and they show up here.
           </p>
         ) : null}
@@ -250,6 +251,8 @@ export default function WebHome() {
           Cast {me.name}
         </button>
       </div>
+
+      <IncomingCast state={state} me={me} act={act} code={code} />
 
       <Tabs active="web" code={code} me={me} />
     </div>
