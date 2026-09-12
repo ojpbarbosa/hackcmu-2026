@@ -87,8 +87,10 @@ function upstashStore(url: string, token: string): Store {
   };
 }
 
-const url = process.env.UPSTASH_REDIS_REST_URL;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+// The Vercel marketplace install injects KV_REST_API_URL/TOKEN; a manual Upstash setup uses
+// UPSTASH_REDIS_REST_URL/TOKEN. Accept either.
+const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
 
 export const storeKind: StoreKind = url && token ? 'upstash' : 'memory';
 export const store: Store = url && token ? upstashStore(url, token) : memoryStore;

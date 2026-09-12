@@ -46,7 +46,7 @@ deterministic authored content and every screen works. Copy `web/.env.example` t
 | `LLM_PROVIDER` | `mock` (default) \| `ifm` \| `compatible` |
 | `IFM_API_KEY` | key for `https://api.ifm.ai/v1/chat/completions`, model `IFM/K2-Horizon-375B-A23B` |
 | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | any OpenAI-compatible endpoint |
-| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | switches the store from memory to Upstash |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (or `KV_REST_API_URL`, `KV_REST_API_TOKEN`, which the Vercel marketplace install injects) | switches the store from memory to Upstash |
 | `NEXT_PUBLIC_BASE_URL` | the URL baked into launcher QR codes |
 
 ### Turning the live model on
