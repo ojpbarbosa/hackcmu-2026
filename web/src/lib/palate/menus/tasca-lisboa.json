@@ -1,0 +1,143 @@
+{
+  "id": "tasca-lisboa",
+  "name": "Tasca Lisboa",
+  "cuisine": "portuguesa",
+  "language": "pt",
+  "address": "Rua da Bica",
+  "sections": [
+    {
+      "name": "petiscos",
+      "dishes": [
+        {
+          "id": "tl-ameijoas",
+          "name": "Amêijoas à Bulhão Pato",
+          "price": 14,
+          "description": "amêijoas com alho, coentros e vinho branco",
+          "ingredients": ["clams", "garlic", "cilantro", "olive oil", "white wine", "lemon zest"]
+        },
+        {
+          "id": "tl-pasteis-bacalhau",
+          "name": "Pastéis de bacalhau",
+          "price": 9,
+          "description": "seis, fritos na hora",
+          "ingredients": ["salt cod", "potato", "parsley", "onion", "egg", "olive oil"]
+        },
+        {
+          "id": "tl-chourico",
+          "name": "Chouriço assado",
+          "price": 8,
+          "description": "assado à mesa, com broa",
+          "ingredients": ["chourico", "corn bread"]
+        },
+        {
+          "id": "tl-presunto",
+          "name": "Presunto com queijo da serra",
+          "price": 12,
+          "description": "tábua com azeitonas",
+          "ingredients": ["presunto", "sheep cheese", "olives", "corn bread"]
+        },
+        {
+          "id": "tl-caldo-verde",
+          "name": "Caldo verde",
+          "price": 6,
+          "description": "couve, batata e uma rodela de chouriço",
+          "ingredients": ["collard greens", "potato", "chourico", "olive oil", "onion"]
+        }
+      ]
+    },
+    {
+      "name": "pratos",
+      "dishes": [
+        {
+          "id": "tl-bacalhau-bras",
+          "name": "Bacalhau à Brás",
+          "price": 18,
+          "description": "bacalhau desfiado, batata palha e ovo",
+          "ingredients": ["salt cod", "egg", "potato", "onion", "olives", "parsley", "olive oil"]
+        },
+        {
+          "id": "tl-bacalhau-natas",
+          "name": "Bacalhau com natas",
+          "price": 19,
+          "description": "gratinado no forno",
+          "ingredients": ["salt cod", "heavy cream", "potato", "onion", "milk", "bay leaf"]
+        },
+        {
+          "id": "tl-polvo",
+          "name": "Polvo à lagareiro",
+          "price": 24,
+          "description": "polvo assado, batata a murro, muito azeite",
+          "ingredients": ["octopus", "olive oil", "garlic", "potato", "parsley"]
+        },
+        {
+          "id": "tl-sardinhas",
+          "name": "Sardinhas assadas",
+          "price": 16,
+          "description": "na brasa, com pimento assado e broa",
+          "ingredients": ["sardine", "olive oil", "bell pepper", "smoked paprika", "corn bread"]
+        },
+        {
+          "id": "tl-frango-piri-piri",
+          "name": "Frango no churrasco",
+          "price": 17,
+          "description": "com piri-piri e limão",
+          "ingredients": ["chicken", "piri piri", "garlic", "olive oil", "lemon zest", "smoked paprika"]
+        },
+        {
+          "id": "tl-feijoada",
+          "name": "Feijoada à transmontana",
+          "price": 18,
+          "description": "feijão branco, enchidos e couve",
+          "ingredients": ["white bean", "chourico", "morcela", "pork belly", "bay leaf", "collard greens"]
+        },
+        {
+          "id": "tl-arroz-pato",
+          "name": "Arroz de pato",
+          "price": 19,
+          "description": "no forno, com rodelas de chouriço",
+          "ingredients": ["duck", "jasmine rice", "chourico", "presunto", "bay leaf", "onion", "olive oil"]
+        },
+        {
+          "id": "tl-bifana",
+          "name": "Bifana",
+          "price": 10,
+          "description": "no pão, com mostarda",
+          "ingredients": ["pork", "garlic", "white wine", "bay leaf", "mustard", "white bread"]
+        },
+        {
+          "id": "tl-prato-do-dia",
+          "name": "Prato do dia",
+          "price": 13,
+          "description": "pergunte à cozinha",
+          "ingredients": []
+        }
+      ]
+    },
+    {
+      "name": "sobremesas",
+      "dishes": [
+        {
+          "id": "tl-pastel-nata",
+          "name": "Pastel de nata",
+          "price": 3,
+          "description": "com canela",
+          "ingredients": ["egg custard", "puff pastry", "cinnamon", "lemon zest", "sugar"]
+        },
+        {
+          "id": "tl-arroz-doce",
+          "name": "Arroz doce",
+          "price": 5,
+          "description": "com casca de limão",
+          "ingredients": ["jasmine rice", "milk", "egg", "sugar", "cinnamon", "lemon zest"]
+        },
+        {
+          "id": "tl-mousse",
+          "name": "Mousse de chocolate",
+          "price": 6,
+          "description": "da casa",
+          "ingredients": ["chocolate", "egg", "sugar", "heavy cream"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "id": "ritters-diner",
+  "name": "Ritter's Diner",
+  "cuisine": "diner",
+  "language": "en",
+  "address": "Baum Blvd",
+  "sections": [
+    {
+      "name": "breakfast",
+      "dishes": [
+        {
+          "id": "rd-pancakes",
+          "name": "Buttermilk pancakes",
+          "price": 9,
+          "description": "three, with butter and syrup",
+          "ingredients": ["pancake batter", "buttermilk", "butter", "maple syrup"]
+        },
+        {
+          "id": "rd-big-breakfast",
+          "name": "The big breakfast",
+          "price": 13,
+          "description": "two eggs, bacon, hash browns, toast",
+          "ingredients": ["egg", "bacon", "hash brown", "white bread", "butter"]
+        },
+        {
+          "id": "rd-corned-beef-hash",
+          "name": "Corned beef hash",
+          "price": 14,
+          "description": "griddled with onion, two eggs on top",
+          "ingredients": ["corned beef", "potato", "onion", "egg", "black pepper"]
+        },
+        {
+          "id": "rd-french-toast",
+          "name": "Blueberry french toast",
+          "price": 11,
+          "description": "thick cut, whipped cream, cinnamon",
+          "ingredients": ["white bread", "egg", "milk", "blueberry", "maple syrup", "whipped cream", "cinnamon"]
+        },
+        {
+          "id": "rd-sausage-gravy",
+          "name": "Biscuits and sausage gravy",
+          "price": 10,
+          "description": "peppered gravy over split biscuits",
+          "ingredients": ["gravy", "breakfast sausage", "butter", "wheat flour", "black pepper"]
+        }
+      ]
+    },
+    {
+      "name": "sandwiches",
+      "dishes": [
+        {
+          "id": "rd-reuben",
+          "name": "Reuben",
+          "price": 15,
+          "description": "corned beef, kraut, swiss, grilled rye",
+          "ingredients": ["corned beef", "sauerkraut", "swiss cheese", "rye bread", "russian dressing"]
+        },
+        {
+          "id": "rd-patty-melt",
+          "name": "Patty melt",
+          "price": 14,
+          "description": "griddled onion, american cheese, rye",
+          "ingredients": ["ground beef", "grilled onion", "american cheese", "rye bread", "butter"]
+        },
+        {
+          "id": "rd-steak-sandwich",
+          "name": "Pittsburgh steak sandwich",
+          "price": 16,
+          "description": "fries and slaw inside the bread",
+          "ingredients": ["steak", "french fries", "coleslaw", "tomato", "white bread", "provolone"]
+        },
+        {
+          "id": "rd-pastrami",
+          "name": "Pastrami on rye",
+          "price": 15,
+          "description": "hot pastrami, mustard, pickle",
+          "ingredients": ["pastrami", "rye bread", "mustard", "dill pickle"]
+        },
+        {
+          "id": "rd-grilled-cheese",
+          "name": "Grilled cheese and tomato",
+          "price": 9,
+          "description": "buttered white bread, pressed",
+          "ingredients": ["american cheese", "white bread", "butter", "tomato"]
+        },
+        {
+          "id": "rd-fish-sandwich",
+          "name": "Friday fish sandwich",
+          "price": 14,
+          "description": "hangs off the bun, slaw and lemon",
+          "ingredients": ["white fish", "white bread", "coleslaw", "lemon zest", "mayonnaise"]
+        }
+      ]
+    },
+    {
+      "name": "plates",
+      "dishes": [
+        {
+          "id": "rd-meatloaf",
+          "name": "Meatloaf plate",
+          "price": 16,
+          "description": "brown gravy, mashed potato",
+          "ingredients": ["ground beef", "gravy", "potato", "onion", "ketchup", "black pepper"]
+        },
+        {
+          "id": "rd-hot-turkey",
+          "name": "Hot turkey sandwich",
+          "price": 15,
+          "description": "open faced, gravy over everything",
+          "ingredients": ["turkey", "white bread", "gravy", "potato", "black pepper"]
+        },
+        {
+          "id": "rd-pierogies",
+          "name": "Pierogies and onions",
+          "price": 12,
+          "description": "butter fried, sour cream on the side",
+          "ingredients": ["pierogi", "grilled onion", "butter", "sour cream"]
+        },
+        {
+          "id": "rd-kielbasa",
+          "name": "Kielbasa and kraut",
+          "price": 14,
+          "description": "smoked sausage, mustard, boiled potato",
+          "ingredients": ["kielbasa", "sauerkraut", "potato", "mustard"]
+        },
+        {
+          "id": "rd-chili",
+          "name": "Chili with cheese",
+          "price": 11,
+          "description": "bowl, cheddar and onion on top",
+          "ingredients": ["chili", "cheddar", "onion", "hot sauce"]
+        },
+        {
+          "id": "rd-midnight-plate",
+          "name": "Midnight plate",
+          "price": 13,
+          "description": "whatever the cook is running tonight",
+          "ingredients": []
+        }
+      ]
+    },
+    {
+      "name": "dessert",
+      "dishes": [
+        {
+          "id": "rd-apple-pie",
+          "name": "Apple pie",
+          "price": 7,
+          "description": "warmed, cinnamon crust",
+          "ingredients": ["apple", "wheat flour", "butter", "sugar", "cinnamon"]
+        },
+        {
+          "id": "rd-chocolate-pie",
+          "name": "Chocolate cream pie",
+          "price": 7,
+          "description": "case high, whipped cream",
+          "ingredients": ["chocolate", "heavy cream", "sugar", "whipped cream", "wheat flour"]
+        }
+      ]
+    }
+  ]
+}
