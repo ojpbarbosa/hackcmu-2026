@@ -302,7 +302,8 @@ function seedHistory(at: number): { casts: CastCast[]; plans: CastPlan[] } {
     };
   });
 
-  const thursday = new Date(at + 3 * 86_400_000);
+  const thursday = new Date(at);
+  thursday.setDate(thursday.getDate() + ((4 - thursday.getDay() + 7) % 7 || 7));
   thursday.setHours(19, 10, 0, 0);
   const plans: CastPlan[] = [
     {

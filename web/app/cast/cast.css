@@ -1,0 +1,35 @@
+/* Cast-only additions. Everything structural lives in src/ui/tokens.css (the
+   mirror of docs/mockups/index.html §Cast); this file only adds what a live
+   screen needs that a static mockup did not: a movable quorum notch, the reveal
+   transition, and a column shell so a sticky CTA sits on the bottom edge. */
+
+/* tailwind ships a `.ring` utility (a 1px box-shadow) that collides with the
+   mockup's countdown ring class and draws a square around it */
+.app-cast .ring { box-shadow: none; }
+
+/* the quorum notch: the mockup pinned it at 75%, a real circle moves it */
+.app-cast .prog.q::after { left: var(--q, 75%); }
+
+/* locked → revealed, 600 ms, using the mockup's own blur technique */
+.app-cast .a .txt { text-shadow: 0 0 0 rgba(10, 10, 15, 0); transition: color .6s ease, text-shadow .6s ease; }
+
+/* real screens are taller than a 393x852 frame: let .bottom reach the bottom */
+.app-cast.screen-root.fill { display: flex; flex-direction: column; }
+.app-cast.screen-root.fill > .pad, .app-cast.screen-root.fill > .col { flex: 0 0 auto; }
+
+/* keep the date on one line; the picker chip wraps under it on a narrow phone */
+.app-cast .plan .in .between { flex-wrap: wrap; row-gap: 10px; }
+.app-cast .plan .in .between .h4 { white-space: nowrap; }
+
+.app-cast .who { flex-wrap: wrap; row-gap: 12px; }
+.app-cast .who .m { max-width: 84px; }
+.app-cast .who .m > .avatar { flex: 0 0 auto; }
+
+.app-cast .timeline .day .card { width: 100%; text-align: left; }
+.app-cast .timeline button.card { border: 0; cursor: pointer; font: inherit; color: inherit; }
+
+.app-cast .qr { display: flex; align-items: center; gap: 14px; }
+.app-cast .qr .col { min-width: 0; }
+
+.app-cast .stage .strips .s.dim { opacity: .55; }
+.app-cast .stage .rej { font: 400 12px/17px var(--sys); color: #6A6A88; margin: 0; }
