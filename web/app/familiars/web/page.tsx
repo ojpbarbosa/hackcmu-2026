@@ -22,7 +22,7 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
   const n = Math.max(flat.length, 1);
   const met: Placed[] = flat.map((entry, i) => {
     const a = Math.PI - ((i + 0.5) / n) * Math.PI;
-    const r = i % 2 === 0 ? 150 : 120;
+    const r = i % 2 === 0 ? 156 : 118;
     return {
       id: entry.id,
       label: entry.label,
@@ -36,7 +36,9 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
   for (const g of groups) {
     const mid = cursor + g.members.length / 2;
     const a = Math.PI - (mid / n) * Math.PI;
-    tags.push({ label: g.label, x: CX + 172 * Math.cos(a), y: CY - 172 * Math.sin(a) });
+    const rawX = CX + 200 * Math.cos(a);
+    const clamped = rawX < 48 || rawX > 325;
+    tags.push({ label: g.label, x: Math.min(325, Math.max(48, rawX)), y: CY - 200 * Math.sin(a) - (clamped ? 44 : 0) });
     cursor += g.members.length;
   }
   const fofIds = friendsOfFriends(state, meId);
@@ -47,8 +49,8 @@ function layout(state: FamState, meId: string): { met: Placed[]; fof: Placed[]; 
       id,
       label: null,
       fam: state.familiars[id] ?? null,
-      x: CX + 210 * Math.cos(a),
-      y: CY - 210 * Math.sin(a),
+      x: Math.min(350, Math.max(23, CX + 232 * Math.cos(a))),
+      y: CY - 232 * Math.sin(a),
     };
   });
   return { met, fof, tags };

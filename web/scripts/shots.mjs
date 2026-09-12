@@ -71,12 +71,13 @@ try {
     const { targetId } = await send('Target.createTarget', { url: 'about:blank' });
     const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
     await send('Page.enable', {}, sessionId);
+    if (process.env.SHOTS_MEMBER) await send('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hack.member.familiars', ${JSON.stringify(process.env.SHOTS_MEMBER)})` }, sessionId);
     await send('Emulation.setDeviceMetricsOverride',
       { width: W, height: H, deviceScaleFactor: 2, mobile: true }, sessionId);
     loaded.delete(sessionId);
     await send('Page.navigate', { url: BASE + route }, sessionId);
     for (let i = 0; i < 80 && !loaded.has(sessionId); i++) await sleep(100);
-    await sleep(1400); // fonts, hydration, first poll
+    await sleep(Number(process.env.SHOTS_WAIT || 1400)); // fonts, hydration, first poll
     const shot = await send('Page.captureScreenshot',
       { format: 'png', captureBeyondViewport: FULL, ...(FULL ? {} : { clip: { x: 0, y: 0, width: W, height: H, scale: 2 } }) },
       sessionId);

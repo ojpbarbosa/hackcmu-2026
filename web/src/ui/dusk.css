@@ -78,7 +78,7 @@
 }
 
 .scr {
-  position: relative;
+  position: static;
   width: 100%;
   height: 100%;
   overflow-x: hidden;
@@ -1117,3 +1117,17 @@
   text-transform: uppercase;
   color: var(--mute);
 }
+
+/* neutralise anything the old kit could leak in */
+.dusk .h1, .dusk .h2, .dusk .h3, .dusk .d1, .dusk .d2, .dusk .d3 { text-transform: none; }
+.dusk :where(button) { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+
+/* pinned cast card on the web home (ported from the mockup) */
+.todaycard { background: var(--glass); border: 1px solid var(--line); border-radius: 22px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; backdrop-filter: blur(8px); text-decoration: none; color: inherit; }
+.todaycard .ring, .dusk .todaycard .ring { position: relative; inset: auto; width: 46px; height: 46px; flex: 0 0 auto; border: 0; border-radius: 50%; background: none; box-shadow: none; animation: none; transform: none; opacity: 1; }
+.todaycard .ring svg { position: absolute; inset: 0; width: 46px; height: 46px; }
+.todaycard .ring b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 800 12px/1 var(--disp); color: var(--tx); }
+.todaycard p { margin: 0; }
+.web .tag { background: rgba(15, 17, 51, 0.72); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+
+.dusk button.pill, .dusk a.pill { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: var(--glass2); border: 1px solid var(--line); font: 600 13px/1 var(--sys); color: var(--tx); }

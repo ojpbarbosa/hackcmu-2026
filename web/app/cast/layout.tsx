@@ -1,3 +1,4 @@
+import '@/ui/tokens.css';
 import './cast.css';
 
 export const metadata = { title: 'Cast' };

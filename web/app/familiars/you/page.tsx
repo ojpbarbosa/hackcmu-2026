@@ -71,7 +71,6 @@ export default function YouPage() {
         <div className="pad" style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div className="hero" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
             <Creature traits={me.traits} size={160} glow />
-            <div className="platform" style={{ width: 170, marginTop: -24 }} />
             <p className="d1 h1">{me.name}</p>
             <p className="t body" style={{ textAlign: 'center' }}>
               {me.greeting}

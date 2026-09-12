@@ -86,7 +86,15 @@ async function callChat(
 
 function parse(text: string): unknown {
   const trimmed = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '');
-  return JSON.parse(trimmed);
+  try {
+    return JSON.parse(trimmed);
+  } catch (e) {
+    // reasoning models sometimes think out loud before the object: take the outermost {...}
+    const a = trimmed.indexOf('{');
+    const b = trimmed.lastIndexOf('}');
+    if (a >= 0 && b > a) return JSON.parse(trimmed.slice(a, b + 1));
+    throw e;
+  }
 }
 
 /** One door for every model call in the platform. Attribution is never faked:

@@ -64,7 +64,7 @@ export default function MissedPage() {
           <button className="rb" type="button" onClick={() => router.back()} aria-label="back">
             ‹
           </button>
-          <span className="pill chip">{current.shared.length} things in common</span>
+          <span className="pill chip">{current.shared.length} {current.shared.length === 1 ? 'thing' : 'things'} in common</span>
         </div>
 
         <div

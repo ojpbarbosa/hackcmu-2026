@@ -80,7 +80,7 @@ export async function runScout(
       code: ctx.code,
       schema: PlanOut,
       effort: 'low',
-      maxTokens: 200,
+      maxTokens: 600,
     });
     status.push('Searching…');
 
@@ -113,7 +113,7 @@ export async function runScout(
         const out = await llm.json(
           'scout.extract',
           { url: p.hit.url, title: p.hit.title, text: p.page.text.slice(0, 3000) },
-          { app: ctx.app, code: ctx.code, schema: ExtractOut, effort: 'low', maxTokens: 300 },
+          { app: ctx.app, code: ctx.code, schema: ExtractOut, effort: 'low', maxTokens: 800 },
         );
         const d = out.data;
         if (!d.title.trim() || !soon(d.whenISO, now)) continue;
@@ -141,7 +141,7 @@ export async function runScout(
         code: ctx.code,
         schema: FitOut,
         effort: 'low',
-        maxTokens: 400,
+        maxTokens: 1000,
       });
       for (const c of fit.data.cards.slice(0, need)) {
         cards.push({

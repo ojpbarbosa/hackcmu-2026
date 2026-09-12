@@ -355,7 +355,7 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
         code: ctx.code,
         schema: HatchOut,
         effort: 'low',
-        maxTokens: 320,
+        maxTokens: 1200,
       });
       const proposed = (data.familiarName ?? '').trim();
       const name = NAME_OK.test(proposed) && !taken.has(proposed) ? proposed : suggestedName;
@@ -417,7 +417,7 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
         code: ctx.code,
         schema: ExchangeOut,
         effort: 'low',
-        maxTokens: 400,
+        maxTokens: 1200,
       });
       return { ...state, pendingCasts, casting, pairs: [...state.pairs, makePair(id, a, b, action.now, data)] };
     }
@@ -447,7 +447,7 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
           pronouns: { me: mine.human.pronouns, them: them.human.pronouns },
           shared,
         },
-        { app: ctx.app, code: ctx.code, schema: IntroOut, effort: 'low', maxTokens: 200 },
+        { app: ctx.app, code: ctx.code, schema: IntroOut, effort: 'low', maxTokens: 600 },
       );
       return {
         ...state,
@@ -494,7 +494,7 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
         code: ctx.code,
         schema: CastOut,
         effort: 'low',
-        maxTokens: 200,
+        maxTokens: 600,
       });
       return { ...state, cast: { question: data.question, hook: data.hook, at: action.now, answers: {} } };
     }
@@ -522,7 +522,7 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
           lastSay: last?.say ?? '',
           nearly: keepMissing(state, me)[0]?.shared.length ?? 0,
         },
-        { app: ctx.app, code: ctx.code, schema: RecapOut, effort: 'low', maxTokens: 400 },
+        { app: ctx.app, code: ctx.code, schema: RecapOut, effort: 'low', maxTokens: 1200 },
       );
       return { ...state, recaps: { ...state.recaps, [me]: { cards: data.cards.slice(0, 3), at: action.now } } };
     }
