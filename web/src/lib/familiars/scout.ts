@@ -114,7 +114,7 @@ function cachedCards(): Card[] {
 function soon(iso: string | null, now: number): boolean {
   if (!iso) return false;
   const t = Date.parse(iso);
-  return Number.isFinite(t) && t > now - 12 * 60 * 60 * 1000 && t < now + 10 * 24 * 60 * 60 * 1000;
+  return Number.isFinite(t) && t > now - 12 * 60 * 60 * 1000 && t < now + 14 * 24 * 60 * 60 * 1000;
 }
 
 export async function runScout(
@@ -130,7 +130,8 @@ export async function runScout(
   try {
     if (!process.env.QUERIT_API_KEY) throw new Error('no QUERIT_API_KEY');
 
-    const plan = await llm.json('scout.plan', { brief, keywords, city: 'Pittsburgh' }, {
+    const today = new Date(now).toISOString().slice(0, 10);
+    const plan = await llm.json('scout.plan', { brief, keywords, city: 'Pittsburgh', today }, {
       app: ctx.app,
       code: ctx.code,
       schema: PlanOut,
@@ -171,11 +172,12 @@ export async function runScout(
       try {
         const out = await llm.json(
           'scout.extract',
-          { url: p.hit.url, title: p.hit.title, text: p.page.text.slice(0, 3000) },
+          { url: p.hit.url, title: p.hit.title, today, windowDays: 14, text: p.page.text.slice(0, 3000) },
           { app: ctx.app, code: ctx.code, schema: ExtractOut, effort: 'low', maxTokens: 800 },
         );
         const d = out.data;
-        if (!d.title.trim() || !soon(d.whenISO, now)) continue;
+        console.log('[scout] extract', p.hit.url.slice(0, 80), JSON.stringify(d).slice(0, 200));
+        if (!d.title.trim() || d.kind !== 'listed_event' || !soon(d.whenISO, now)) continue;
         cards.push({
           id: `card_${cards.length}_${Math.abs(Date.parse(d.whenISO ?? '') || cards.length)}`,
           title: d.title.trim(),
@@ -195,7 +197,7 @@ export async function runScout(
 
     if (cards.length < 3) {
       const need = 3 - cards.length;
-      const fit = await llm.json('scout.fit', { keywords, city: 'Pittsburgh', brief, need }, {
+      const fit = await llm.json('scout.fit', { keywords, city: 'Pittsburgh', brief, need, today }, {
         app: ctx.app,
         code: ctx.code,
         schema: FitOut,

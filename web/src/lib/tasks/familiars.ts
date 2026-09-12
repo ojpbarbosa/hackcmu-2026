@@ -66,27 +66,33 @@ export const familiarsPrompts = {
   },
   'scout.plan': {
     system:
-      'Plan three web searches that would find something this circle could do together in the next ten days, in ' +
-      'their city. Each query is a short search string (at most ten words), names the city and one concrete ' +
-      'keyword from the circle, and targets listings, calendars or event pages. No quotes, no operators.',
+      'Today is the given date. Plan three web searches that would find something this circle could do together in ' +
+      'the next two weeks, in their city. Each query is a short search string (at most ten words), names the city and ' +
+      'one concrete keyword from the circle, includes the month name, and targets listings, calendars or event pages ' +
+      '(eventbrite, meetup, venue calendars, local press). No quotes, no operators.',
     outputShape: '{"queries":[string,string,string]}',
     effort: 'low',
   },
   'scout.extract': {
     system:
-      'From the text of one web page, extract the single event it lists, if it lists one. title is the event name ' +
-      '(empty string if the page is not one event). whenISO is an ISO 8601 timestamp for the start, or null if the ' +
-      'page does not say. where is the venue or neighbourhood, at most six words. cost is a short string like ' +
-      '"free" or "$10". kind is "listed_event" when a real organiser lists it, otherwise "self_organized".',
+      'Today is the given date; only the next windowDays days matter. From the text of one web page, extract the ' +
+      'single upcoming event it lists in that window, if any. title is the event name (empty string if the page is ' +
+      'not one specific event, or the event is outside the window or in the past). whenISO is the start as full ' +
+      'ISO 8601 with the America/New_York offset (e.g. 2026-09-19T20:00:00-04:00); null if the page gives no date. ' +
+      'Never guess a year: use the given today to resolve dates without a year. where is the venue or ' +
+      'neighbourhood, at most six words. cost is a short string like "free" or "$10". kind is "listed_event" when a ' +
+      'real organiser or venue lists it, otherwise "self_organized".',
     outputShape: '{"title":string,"whenISO":string|null,"where":string,"cost":string,"kind":"listed_event"|"self_organized"}',
     effort: 'low',
   },
   'scout.fit': {
     system:
-      'Propose things this circle could organise themselves in the next ten days, built only from their keywords ' +
-      'and city. Each is concrete enough to show up to: a title at most eight words, an ISO 8601 whenISO in the ' +
-      'next ten days, a where (a plausible kind of place, at most six words), a cost, and a why at most twelve ' +
-      'words naming the shared thing. No exclamation marks, no brand names you are not sure exist.',
+      'Today is the given date. Propose things this circle could organise themselves in the next ten days, built ' +
+      'only from their keywords and city. Each is concrete enough to show up to: a title at most eight words, an ' +
+      'ISO 8601 whenISO with the America/New_York offset that falls within the ten days after today (never a past ' +
+      'year), preferring Friday evening, Saturday and Sunday, a where (a plausible kind of place, at most six ' +
+      'words), a cost, and a why at most twelve words naming the shared thing. No exclamation marks, no brand ' +
+      'names you are not sure exist.',
     outputShape: '{"cards":[{"title":string,"whenISO":string,"where":string,"cost":string,"why":string}]}',
     effort: 'low',
   },
