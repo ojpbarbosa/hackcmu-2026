@@ -1148,3 +1148,7 @@
 .scr.flow .bottom { padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
 .tabs { padding-bottom: env(safe-area-inset-bottom, 0px); height: calc(110px + env(safe-area-inset-bottom, 0px)); }
 .has-tabs { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+
+/* Safari paints its top and bottom bars from these: one dark colour for both */
+html { color-scheme: dark; background: #0f1133; }
+body { background: #0f1133; }

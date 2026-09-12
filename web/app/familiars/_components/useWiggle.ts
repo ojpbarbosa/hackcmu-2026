@@ -16,7 +16,7 @@ function ctor(): MotionCtor | null {
 export function useWiggle({
   enabled,
   onSpike,
-  threshold = 14,
+  threshold = 9,
 }: {
   enabled: boolean;
   onSpike: () => void;
@@ -26,9 +26,12 @@ export function useWiggle({
   permission: Perm;
   request: () => Promise<void>;
   available: boolean;
+  /** 0..1+, how hard the phone is moving right now (1 = threshold) */
+  level: number;
 } {
   const [permission, setPermission] = useState<Perm>('prompt');
   const [available, setAvailable] = useState(false);
+  const [level, setLevel] = useState(0);
   const lastRef = useRef(0);
   const onSpikeRef = useRef(onSpike);
   onSpikeRef.current = onSpike;
@@ -60,14 +63,14 @@ export function useWiggle({
   useEffect(() => {
     if (!armed) return;
     const onMotion = (e: DeviceMotionEvent) => {
+      // the MVP math that worked on the venue floor: gravity-inclusive magnitude minus g,
+      // and the linear reading when the device gives one; whichever is larger
       const a = e.acceleration;
       const g = e.accelerationIncludingGravity;
-      let mag = 0;
-      if (a && (a.x !== null || a.y !== null || a.z !== null)) {
-        mag = Math.hypot(a.x ?? 0, a.y ?? 0, a.z ?? 0);
-      } else if (g) {
-        mag = Math.abs(Math.hypot(g.x ?? 0, g.y ?? 0, g.z ?? 0) - 9.81);
-      }
+      const lin = a ? Math.hypot(a.x ?? 0, a.y ?? 0, a.z ?? 0) : 0;
+      const grav = g ? Math.abs(Math.hypot(g.x ?? 0, g.y ?? 0, g.z ?? 0) - 9.81) : 0;
+      const mag = Math.max(lin, grav);
+      setLevel((prev) => Math.max(mag / threshold, prev * 0.85));
       if (mag <= threshold) return;
       const now = Date.now();
       if (now - lastRef.current < 1500) return;
@@ -78,5 +81,5 @@ export function useWiggle({
     return () => window.removeEventListener('devicemotion', onMotion);
   }, [armed, threshold]);
 
-  return { armed, permission, request, available };
+  return { armed, permission, request, available, level };
 }

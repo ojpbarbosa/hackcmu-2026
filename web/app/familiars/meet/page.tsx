@@ -71,7 +71,7 @@ export default function MeetPage() {
     void act('wiggle');
   }, [act, me]);
 
-  const { available, permission, request } = useWiggle({ enabled: armed, onSpike });
+  const { available, permission, request, level } = useWiggle({ enabled: armed, onSpike });
 
   // leave casting mode behind us
   const actRef = useRef(act);
@@ -298,7 +298,7 @@ export default function MeetPage() {
         <div className="pad" style={{ marginTop: 26, display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'center' }}>
           <p className="d2">{pulsing ? `cast out…` : `wiggle to cast ${me?.name ?? 'your familiar'}`}</p>
           <div className="meter">
-            <i style={{ '--v': pulsing ? '100%' : '42%' } as React.CSSProperties} />
+            <i style={{ width: pulsing ? '100%' : `${Math.max(6, Math.min(100, Math.round(level * 70)))}%` }} />
           </div>
         </div>
       </div>
