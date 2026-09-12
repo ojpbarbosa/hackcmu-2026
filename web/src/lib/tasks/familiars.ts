@@ -3,23 +3,34 @@ import type { Prompt } from './index';
 export const familiarsPrompts = {
   'familiars.hatch': {
     system:
-      'A person just gave three seed answers. Name their familiar with one lowercase word (an animal or a small creature), ' +
-      'pull five keywords from the seeds, and give the cluster label the person belongs to (two words at most).',
+      'A person at a hackathon gave three seed answers: something they build, where they are from, one true thing. ' +
+      'Invent their familiar: one lowercase word, an animal or a small object, never the human name and never a compound. ' +
+      'Pull five short keyword tags from the seeds (lowercase, one or two words each, the things two strangers could ' +
+      'recognise in each other). Then give the cluster label for the scene this person belongs to: two words at most, ' +
+      'lowercase, concrete ("modular synths", "wet lab", "solar car"), never "technology" or "other".',
     outputShape: '{"name":string,"keywords":[string,string,string,string,string],"clusterLabel":string}',
     effort: 'low',
   },
   'familiars.exchange': {
     system:
-      'Two familiars meet for ten seconds and talk about their humans. Write four lines, alternating a and b, ' +
-      'at most twelve words each, dry and warm, no exclamation marks. Then one line the two humans should hear.',
-    outputShape:
-      '{"dialogue":[{"who":"a"|"b","text":string}],"youBoth":string,"suggestion":string}',
+      'Two familiars meet for ten seconds while their humans hold their phones together. ' +
+      'Write four lines alternating a, b, a, b. Each line is at most twelve words, spoken in character, ' +
+      'dry and playful, and each references something from its human seeds. No exclamation marks, no emoji, ' +
+      'no greetings, no names in the first line. Then write "youBoth": at most eight words naming the one thing ' +
+      'the two humans actually share, ending in a period. Then "suggestion": one sentence telling both humans what ' +
+      'to talk about first, built from their seeds. The same sentence is shown on both phones, so it must read the ' +
+      'same from either side: never name a person and never mention a seat, the app shows those itself.',
+    outputShape: '{"dialogue":[{"who":"a"|"b","text":string}],"youBoth":string,"suggestion":string}',
     effort: 'low',
   },
   'familiars.story': {
     system:
-      'Write three short story cards about one person\'s night at an event, from their bumps and clusters. ' +
-      'Each card has a lowercase label, an optional big number, and two sentences at most.',
+      "Write one person's night at the event as exactly three cards, using only the facts given. " +
+      'Card one counts what happened: label like "in seven hours", a big number, and two sentences of detail. ' +
+      'Card two is the callback: a promise or a detail from one of the bumps, no big number. ' +
+      'Card three is the room and the one that got away: how their cluster sits in the room and that one person ' +
+      'matches them by a percentage, without revealing that person\'s name. Labels are lowercase, ' +
+      'two sentences a card at most, no exclamation marks.',
     outputShape: '{"cards":[{"label":string,"big":string,"text":string}]}',
     effort: 'medium',
   },
