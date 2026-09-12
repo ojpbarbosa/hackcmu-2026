@@ -35,7 +35,16 @@ const NOT_BECAUSE = [
 ];
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
-const short = (s: string) => (s.length > 46 ? `${s.slice(0, 44).trim()}…` : s).replace(/[.?]$/, '');
+const short = (s: string) => (s.length > 58 ? `${s.slice(0, 56).trim()}…` : s).replace(/[.?]$/, '');
+
+/** words that only look like proper nouns because they start a sentence */
+const COMMON = new Set(
+  (
+    'that this these those there then they them their it its half cold instant every three two one some something ' +
+    'someone what where when who why how still again nothing never always just only even maybe probably honestly ' +
+    'actually about after before with without from into over under here away back'
+  ).split(' '),
+);
 
 /** The proper noun the circle keeps repeating, with how often it showed up. */
 function routine(history: History[]): { word: string; count: number; prompt: string } | null {
@@ -43,6 +52,7 @@ function routine(history: History[]): { word: string; count: number; prompt: str
   for (const h of history) {
     for (const a of h.answers ?? []) {
       for (const w of new Set(a.text.match(/\b[A-Z][a-zA-Z]{3,}\b/g) ?? [])) {
+        if (COMMON.has(w.toLowerCase())) continue;
         const row = tally.get(w) ?? { count: 0, prompt: h.prompt };
         row.count += 1;
         tally.set(w, row);
@@ -71,7 +81,7 @@ export default function mock(input: Input, seed: number) {
       : `nothing in the last ${history.length} casts went near this, and ${answered} answers say the circle will take a new topic`,
     mode === 'catch'
       ? 'catch mode: the answers have to end in a door somebody can walk through on a Thursday'
-      : `"${short(prompt)}" is answerable in one line, which is the only kind this circle finishes`,
+      : `it is answerable in one line, which is the only kind of cast this circle finishes — the last ${history.length} all closed`,
     history[0]
       ? `it beat "${short(history[0].prompt)}", which ran on the last cast`
       : 'it beat "how was your day", which gets "fine" four times',
