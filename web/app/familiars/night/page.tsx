@@ -10,7 +10,7 @@ export default function NightPage() {
   const router = useRouter();
   const { code, state, me, act, events } = useFamiliars();
   const [page, setPage] = useState(0);
-  const asked = useRef(false);
+  const asked = useRef<number | null>(null);
 
   const story = me && state ? (state.stories[me.id] ?? null) : null;
   const stats = useMemo(() => (state && me ? statsFor(state, me.id) : null), [state, me]);
@@ -19,14 +19,25 @@ export default function NightPage() {
     if (state && !me) router.replace(withRoom('/familiars', code));
   }, [state, me, code, router]);
 
-  // the chronicler writes it once, from the graph as it stands
+  /** the newest bump this phone is part of, so a card written before it can be spotted */
+  const lastBumpAt = useMemo(() => {
+    if (!state || !me) return 0;
+    const mine = state.bumps.filter((b) => b.a === me.id || b.b === me.id);
+    return mine.reduce((max, b) => Math.max(max, b.at), 0);
+  }, [state, me]);
+
+  // The chronicler writes from the graph as it stands. Opening this screen before
+  // a bump used to pin "nobody yet" for the rest of the night, so a bump that lands
+  // after the card was written asks for a new one.
   useEffect(() => {
-    if (!me || !state || story || asked.current) return;
-    asked.current = true;
+    if (!me || !state) return;
+    const wanted = story ? (lastBumpAt > story.at ? lastBumpAt : null) : 0;
+    if (wanted === null || asked.current === wanted) return;
+    asked.current = wanted;
     act('story').catch(() => {
-      asked.current = false;
+      asked.current = null;
     });
-  }, [me, state, story, act]);
+  }, [me, state, story, lastBumpAt, act]);
 
   const written = lastModel(events, 'familiars.story');
   const cards = story?.cards ?? [];

@@ -110,18 +110,51 @@ export function Village({
           {rings?.has(n.id) ? (
             <circle cx={n.x ?? 0} cy={n.y ?? 0} r={n.r + 6} fill="none" stroke={n.color} strokeOpacity={0.6} />
           ) : null}
-          {label(n.id) ? (
-            <text
-              x={(n.x ?? 0) + n.r + 10}
-              y={(n.y ?? 0) + 4}
-              fill="#F0F0F8"
-              style={{ font: '600 14px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}
-            >
-              {label(n.id)}
-            </text>
-          ) : null}
         </g>
       ))}
+      {/* labels last, so a node never lands on top of one, and never on each other:
+          two familiars that just bumped sit close together by construction */}
+      <g>
+        {placeLabels(list, label).map((p) => (
+          <text
+            key={p.id}
+            x={p.x}
+            y={p.y}
+            textAnchor={p.anchor}
+            fill="#F0F0F8"
+            stroke="#0D0D14"
+            strokeWidth={4}
+            paintOrder="stroke"
+            style={{ font: '600 14px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}
+          >
+            {p.text}
+          </text>
+        ))}
+      </g>
     </svg>
   );
+}
+
+type Placed = { id: string; text: string; x: number; y: number; anchor: 'start' | 'end' };
+
+/** Lay the named meetings out so they stay readable: to the right of the node,
+ *  flipped left at the edge, and pushed down when two of them would collide. */
+function placeLabels(list: Sim[], label: (id: string) => string | undefined): Placed[] {
+  const out: Placed[] = [];
+  for (const n of list) {
+    const text = label(n.id);
+    if (!text) continue;
+    const width = text.length * 7.6;
+    const nx = n.x ?? 0;
+    const ny = n.y ?? 0;
+    const flip = nx + n.r + 10 + width > W - 8;
+    const x = flip ? nx - n.r - 10 : nx + n.r + 10;
+    let y = ny + 4;
+    for (const prev of out) {
+      const near = Math.abs(prev.y - y) < 18 && Math.abs(prev.x - x) < width + 40;
+      if (near) y = prev.y + 20;
+    }
+    out.push({ id: n.id, text, x, y, anchor: flip ? 'end' : 'start' });
+  }
+  return out;
 }
