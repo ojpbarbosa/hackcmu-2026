@@ -8,7 +8,7 @@ The cut line is hard. Everything above it must work on two iPhones over HTTPS be
 
 **P0 (the demo)**
 1. **Dusk theme + creatures.** New tokens (`--bg #0F1133 → #2A1A55`, glass surfaces, gold/mint/rose accents, Bricolage display). One `<Creature>` component that renders any familiar from a seed (see generator below), with idle bob, blink, and aura.
-2. **Hatch.** Screen 1: name + pronoun chips (he/him, she/her, they/them, own). Screen 2: talk. The phone records (MediaRecorder, 10–15 s chunks) → `POST /api/stt` (ElevenLabs Scribe) → tokens appear on the egg as the transcript grows → `hatch` action with the transcript → familiar. Three suggestion cards with example lines; each checks off when the transcript covers it (keyword match, client-side).
+2. **Hatch.** One screen, no typing. The phone records (MediaRecorder, 4 s chunks) → `POST /api/stt` (ElevenLabs Scribe) → tokens appear on the egg as the transcript grows → `hatch` action with the transcript → familiar. Four filled suggestion cards in a 2×2 grid, each with its own tint and a large borderless icon: **who you are** ("I'm João, he/him"), **what you make** ("I build synths"), **where you're from** ("Recife"), **lately** ("can't stop…"). Each checks off when the transcript covers it (keyword match, client-side). The human's name and pronouns are extracted from the transcript by the hatch model call; when the transcript has no name the card stays unchecked and the "Done" button stays disabled. Without a microphone or STT key, the same screen shows a text area in place of the mic and the cards still check off.
 3. **Meet.** Casting mode arms the phone (presence in the room with `casting:true`). One wiggle (DeviceMotion spike) creates a pending cast visible to every other armed phone in the room for 8 s; those phones show the catch card; tapping **Catch** pairs them. No second wiggle, no timing window. Then the duet: the exchange lines stream one at a time as subtitles under the stage; the "you both" card; a TTS line per familiar when the ElevenLabs key is present.
 4. **Web (home).** Your creature at the bottom, met people around it grouped by shared keyword (the strongest shared keyword becomes the label), friends of friends faint, "N you keep missing" entry, recap bubble.
 5. **Out (scout + swipe).** "Send <name> out" with a brief (shared keywords, area, weekend, budget) → server runs the scout: Querit search → K2 375B picks leads → Querit page fetch → K2 extracts facts → up to three cards (`listed_event` with source + checked time, or `self_organized` labeled). Deck swipe (right = in, left = out). When every member of the circle swiped right on the same card → group match screen + ICS.
@@ -44,7 +44,7 @@ That is 4 × 8 × 3 × 3 × 4 = 1,152 distinct familiars from one SVG component 
 ## Routes (one app)
 
 ```
-/familiars                 hatch (name → talk → hatched)  [redirect to /familiars/web when hatched]
+/familiars                 hatch (talk → hatched)  [redirect to /familiars/web when hatched]
 /familiars/web             home
 /familiars/meet            casting mode / catch / duet
 /familiars/missed          the ones you keep missing + intro
@@ -71,7 +71,7 @@ Actions: `profile`, `arm`, `disarm`, `wiggle`, `catch`, `talked`, `askIntro`, `s
 
 ## Model tasks (server, JSON)
 
-- `familiars.hatch` (375B, low): `{name, pronouns, transcript}` → `{familiarName, keywords[5], clusterLabel, greeting}`.
+- `familiars.hatch` (375B, low): `{transcript, suggestedName}` → `{humanName, pronouns, familiarName, keywords[5], clusterLabel, greeting}`. `humanName` and `pronouns` come from the transcript ("I'm João, he/him"); pronouns default to `they/them` when not stated.
 - `familiars.exchange` (0.9B ×2 when available, else 375B): `{a, b}` → `{lines[4], youBoth, say}`.
 - `familiars.intro` (375B): `{me, them, via}` → `{line}`.
 - `scout.plan` (375B): `{brief}` → `{queries[3]}`; `scout.extract` (375B): `{page text}` → `{title, whenISO, where, cost, unknowns[], kind}`; `scout.fit` (375B): `{cards, circle}` → `{why per card}`.

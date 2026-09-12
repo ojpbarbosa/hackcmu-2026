@@ -36,7 +36,7 @@ def tv(s, i, x, y, w):
     h = w * 922 / 1640; s.shapes.add_picture(f'{FR}/f{i}.png', Inches(x), Inches(y), Inches(w), Inches(h)); return h
 def notes(s, t): s.notes_slide.notes_text_frame.text = t
 def row3(s, ids, y=2.05, h=5.25):
-    w = h * 786 / 1704; gap = 0.35; total = 3 * w + 2 * gap; x = (13.333 - total) / 2
+    w = h * 786 / 1704; gap = 0.35; total = len(ids) * w + (len(ids) - 1) * gap; x = (13.333 - total) / 2
     for i in ids: phone(s, i, x, y, h); x += w + gap
 
 # 1 title
@@ -74,10 +74,10 @@ notes(s, 'Our idea is to manufacture the introduction. Your familiar knows you, 
 # 4 hatch
 s = prs.slides.add_slide(BLANK); bg(s)
 label(s, 0.9, 0.55, '1 · hatch')
-text(s, 0.9, 0.8, 8.0, 1.1, [[('Five seconds of talking. A familiar that is based on you.', 26, TX, True)]])
-text(s, 9.3, 0.9, 3.4, 0.8, [[('Name, pronouns, then you talk. Your words stick to the egg. It hatches with a name, a voice, and the four things it knows.', 13, TX2, False)]], spacing=1.2)
-row3(s, [0, 1, 2])
-notes(s, 'Onboarding is a name, pronouns, and a few seconds of talking. What you say sticks to the egg, and it hatches into a creature that is visibly based on you. Merlin here knows synths, tape loops, Recife, and 3 am.')
+text(s, 0.9, 0.8, 8.0, 1.1, [[('Say who you are and what you make. It hatches from that.', 26, TX, True)]])
+text(s, 9.3, 0.9, 3.4, 0.8, [[('No typing. Your name, your pronouns, what you make, where you are from: spoken, and stuck to the egg as you say them. It hatches with a name, a voice, and the four things it knows.', 13, TX2, False)]], spacing=1.2)
+row3(s, [1, 2], y=1.95, h=5.4)
+notes(s, 'Onboarding is one screen and no typing: you say your name, your pronouns, what you make. What you say sticks to the egg, and it hatches into a creature that is visibly based on you. Merlin here knows synths, tape loops, Recife, and 3 am.')
 
 # 5 meet
 s = prs.slides.add_slide(BLANK); bg(s)

@@ -100,13 +100,15 @@ main{max-width:1440px;margin:0 auto}
 /* hatch */
 .hatch .egg{display:flex;justify-content:center;margin-top:10px}
 .hatch .ask{text-align:center}
-.hatch .say{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.hatch .say div{position:relative;background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:12px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font:600 12px/15px var(--sys);color:var(--tx2)}
-.hatch .say em{font:italic 500 11px/14px var(--sys);color:var(--mute)}
-.hatch .say .got{position:absolute;right:-6px;top:-6px;width:22px;height:22px;border-radius:50%;background:var(--mint);color:var(--mint-ink);display:flex;align-items:center;justify-content:center}
+.hatch .say{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hatch .say div{--tint:#C7A8FF;position:relative;background:color-mix(in srgb,var(--tint) 14%,rgba(255,255,255,.04));border:0;border-radius:20px;padding:14px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font:700 13px/16px var(--sys);color:var(--tx2)}
+.hatch .say em{font:italic 500 12px/15px var(--sys);color:var(--mute)}
+.hatch .say .got{position:absolute;right:-5px;top:-5px;width:24px;height:24px;border-radius:50%;background:var(--mint);color:var(--mint-ink);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.35)}
 .hatch .say .got.dim{background:var(--glass2);color:var(--mute)}
-.hatch .say div.on{background:rgba(255,200,92,.16);border-color:rgba(255,200,92,.6);color:#FFE3A6}
-.hatch .say div .ic{width:36px;height:36px;border-radius:12px;background:var(--glass2);display:flex;align-items:center;justify-content:center;color:var(--tx)}
+.hatch .say div.on{background:color-mix(in srgb,var(--tint) 44%,#221A55);color:#fff}
+.hatch .say div.on em{color:rgba(255,255,255,.72)}
+.hatch .say div .ic{width:48px;height:48px;border-radius:0;background:none;display:flex;align-items:center;justify-content:center;color:var(--tint);margin-bottom:2px}
+.hatch .say div .ic .icon{width:34px;height:34px;stroke-width:1.9;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--tint) 60%,transparent))}
 .tok{position:absolute;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid var(--line);font:600 12px/1 var(--sys);color:var(--tx);backdrop-filter:blur(6px)}
 .tok.g{background:rgba(255,200,92,.22);border-color:rgba(255,200,92,.5)}
 .mic{width:80px;height:80px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;color:#0F1133;box-shadow:0 12px 34px rgba(0,0,0,.4)}
@@ -125,9 +127,9 @@ main{max-width:1440px;margin:0 auto}
 .arc .ring.r2{width:300px;height:300px;opacity:.6}
 .arc .ring.r3{width:370px;height:370px;opacity:.35}
 .arc .near{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;font:600 11px/1 var(--sys);color:var(--tx2)}
-.meter{height:8px;border-radius:999px;background:var(--glass);overflow:hidden;position:relative}
+.meter{height:18px;border-radius:999px;background:var(--glass);overflow:hidden;position:relative;box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
 .meter i{position:absolute;left:0;top:0;bottom:0;width:42%;border-radius:999px;background:linear-gradient(90deg,#FFC85C,#FF7AA2)}
-.meter::after{content:"";position:absolute;left:72%;top:-4px;width:2px;height:16px;background:#fff;border-radius:1px}
+.meter::after{content:"";position:absolute;left:72%;top:3px;width:3px;height:12px;background:#fff;border-radius:2px}
 .catchcard{background:#fff;color:#0F1133;border-radius:28px;padding:16px 16px 16px 14px;display:flex;align-items:center;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
 .catchcard b{display:block;font:800 18px/22px var(--disp);letter-spacing:-.02em}
 .catchcard small{font:500 13px/16px var(--sys);color:#5A5A78}
@@ -334,37 +336,22 @@ main{max-width:1440px;margin:0 auto}
 <style>html,body{background:transparent!important;padding:0;margin:0}.frame .cap{display:none}</style><div style="position:absolute;top:0px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen hatch">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
-        <div class="nav"><span></span><span class="pill">1 of 2</span></div>
-        <div class="pad" style="margin-top:14px;display:flex;flex-direction:column;gap:22px;align-items:center;text-align:center">
-          <div class="crit bob" style="--s:120px"><div class="aura" style="--c1:#C7A8FF"></div><svg><use href="#c-egg"/></svg></div>
-          <p class="d2">what should it call you?</p>
-          <div style="width:100%;border-bottom:2px solid rgba(255,255,255,.35);padding:6px 4px 10px;font:800 34px/1 var(--disp);color:#fff;text-align:left;letter-spacing:-.02em">João<span style="display:inline-block;width:3px;height:30px;background:var(--gold);margin-left:4px;vertical-align:-3px"></span></div>
-          <div class="chips" style="justify-content:center;gap:8px">
-            <span class="pill solid">he/him</span><span class="pill">she/her</span><span class="pill">they/them</span><span class="pill"><svg class="icon sm"><use href="#i-plus"/></svg>own</span>
-          </div>
-        </div>
-      </div>
-      <div class="bottom">
-        <button class="cta" type="button">Next, talk to it</button>
-      </div>
-      <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Name and pronouns</b><span>the only typing in the whole app</span></div></div></div><div style="position:absolute;top:920px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen hatch">
-      <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
-      <div class="top">
-        <div class="nav"><span class="pill">2 of 2</span><span class="pill"><span style="width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)"></span>listening</span></div>
+        <div class="nav"><span class="pill">hatch</span><span class="pill"><span style="width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)"></span>listening</span></div>
         <div class="pad" style="margin-top:14px;display:flex;flex-direction:column;gap:18px">
           <div class="egg" style="position:relative">
-            <div class="crit bob" style="--s:180px"><div class="aura" style="--c1:#C7A8FF"></div><svg><use href="#c-egg"/></svg></div>
+            <div class="crit bob" style="--s:150px"><div class="aura" style="--c1:#C7A8FF"></div><svg><use href="#c-egg"/></svg></div>
             <span class="tok g" style="left:18px;top:26px">synths</span>
+            <span class="tok g" style="left:10px;top:70px">João · he/him</span>
             <span class="tok g" style="right:14px;top:58px">Recife</span>
             <span class="tok" style="left:34px;bottom:14px;opacity:.7">3 am</span>
             <span class="tok g" style="right:36px;bottom:26px">tape loops</span>
           </div>
           <div class="ask"><p class="d2">what can't you stop doing lately?</p></div>
           <div class="say">
-            <div class="on"><div class="ic"><svg class="icon"><use href="#i-wrench"/></svg></div>what you make<em>"I build synths"</em><span class="got"><svg class="icon sm"><use href="#i-check"/></svg></span></div>
-            <div class="on"><div class="ic"><svg class="icon"><use href="#i-pin"/></svg></div>where you're from<em>"Recife"</em><span class="got"><svg class="icon sm"><use href="#i-check"/></svg></span></div>
-            <div><div class="ic"><svg class="icon"><use href="#i-heart"/></svg></div>lately<em>"can't stop…"</em><span class="got dim"><svg class="icon sm"><use href="#i-mic"/></svg></span></div>
+            <div class="on" style="--tint:#C7A8FF"><div class="ic"><svg class="icon"><use href="#i-users"/></svg></div>who you are<em>"I'm João, he/him"</em><span class="got"><svg class="icon sm"><use href="#i-check"/></svg></span></div>
+            <div class="on" style="--tint:#FFC85C"><div class="ic"><svg class="icon"><use href="#i-wrench"/></svg></div>what you make<em>"I build synths"</em><span class="got"><svg class="icon sm"><use href="#i-check"/></svg></span></div>
+            <div class="on" style="--tint:#7CF0C4"><div class="ic"><svg class="icon"><use href="#i-pin"/></svg></div>where you're from<em>"Recife"</em><span class="got"><svg class="icon sm"><use href="#i-check"/></svg></span></div>
+            <div style="--tint:#FF7AA2"><div class="ic"><svg class="icon"><use href="#i-heart"/></svg></div>lately<em>"can't stop…"</em><span class="got dim"><svg class="icon sm"><use href="#i-mic"/></svg></span></div>
           </div>
         </div>
       </div>
@@ -374,7 +361,7 @@ main{max-width:1440px;margin:0 auto}
         <p class="s">0:41</p>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Talk to the egg</b><span>cards suggest, tokens collect</span></div></div></div><div style="position:absolute;top:1840px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>Talk to the egg</b><span>the whole onboarding, spoken</span></div></div></div><div style="position:absolute;top:920px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="pad" style="margin-top:34px;display:flex;flex-direction:column;gap:20px;align-items:center;text-align:center">
@@ -389,7 +376,7 @@ main{max-width:1440px;margin:0 auto}
         <button class="cta glass" type="button">Not quite me</button>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Hatched</b><span>a name, a voice, four things it knows</span></div></div></div><div style="position:absolute;top:2760px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>Hatched</b><span>a name, a voice, four things it knows</span></div></div></div><div style="position:absolute;top:1840px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="rb"><svg class="icon"><use href="#i-chev-l"/></svg></span><span class="pill"><span style="width:8px;height:8px;border-radius:50%;background:var(--rose);box-shadow:0 0 10px var(--rose)"></span>casting</span></div>
@@ -408,7 +395,7 @@ main{max-width:1440px;margin:0 auto}
         <button class="cta glass" type="button">Enter user instead</button>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Casting mode</b><span>two people casting near you</span></div></div></div><div style="position:absolute;top:3680px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>Casting mode</b><span>two people casting near you</span></div></div></div><div style="position:absolute;top:2760px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="rb"><svg class="icon"><use href="#i-chev-l"/></svg></span><span class="pill"><span style="width:8px;height:8px;border-radius:50%;background:var(--rose);box-shadow:0 0 10px var(--rose)"></span>casting</span></div>
@@ -430,7 +417,7 @@ main{max-width:1440px;margin:0 auto}
         <button class="cta glass" type="button">Not now</button>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>The catch</b><span>one tap on the other phone</span></div></div></div><div style="position:absolute;top:4600px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen meet">
+    </div></div><div class="cap"><b>The catch</b><span>one tap on the other phone</span></div></div></div><div style="position:absolute;top:3680px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen meet">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span></span><span class="pill">Merlin ↔ Raven</span></div>
@@ -449,7 +436,7 @@ main{max-width:1440px;margin:0 auto}
         <button class="cta" type="button"><svg class="icon"><use href="#i-check"/></svg>We talked</button>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>The duet</b><span>one line at a time, spoken, then yours</span></div></div></div><div style="position:absolute;top:5520px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>The duet</b><span>one line at a time, spoken, then yours</span></div></div></div><div style="position:absolute;top:4600px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="pill"><svg class="icon sm"><use href="#i-web"/></svg>your web · 9</span><span class="bubble-btn"><div class="crit moth" style="--s:30px"><svg><use href="#c-moth"/></svg></div><i></i></span></div>
@@ -491,7 +478,7 @@ main{max-width:1440px;margin:0 auto}
       </div>
       <div class="tab"><div class="on"><div class="ic"><svg class="icon"><use href="#i-web"/></svg></div>web</div><div><div class="ic"><svg class="icon"><use href="#i-cast"/></svg></div>casts</div><div><div class="ic"><div class="crit moth" style="--s:30px"><svg><use href="#c-moth"/></svg></div></div>you</div></div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Web</b><span>home, three tabs, one button</span></div></div></div><div style="position:absolute;top:6440px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>Web</b><span>home, three tabs, one button</span></div></div></div><div style="position:absolute;top:5520px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="rb"><svg class="icon"><use href="#i-chev-l"/></svg></span><span class="pill">94% like you</span></div>
@@ -514,7 +501,7 @@ main{max-width:1440px;margin:0 auto}
         <button class="cta glass" type="button">Maybe later</button>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>The one you missed</b><span>a friend's familiar carries the line</span></div></div></div><div style="position:absolute;top:7360px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>The one you missed</b><span>a friend's familiar carries the line</span></div></div></div><div style="position:absolute;top:6440px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="pill"><svg class="icon sm"><use href="#i-users"/></svg>night owls</span><span class="pill"><svg class="icon sm" style="color:var(--gold)"><use href="#i-vol"/></svg>1:21</span></div>
@@ -545,7 +532,7 @@ main{max-width:1440px;margin:0 auto}
       </div>
       <div class="tab"><div><div class="ic"><svg class="icon"><use href="#i-web"/></svg></div>web</div><div class="on"><div class="ic"><svg class="icon"><use href="#i-cast"/></svg></div>casts</div><div><div class="ic"><div class="crit moth" style="--s:30px"><svg><use href="#c-moth"/></svg></div></div>you</div></div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Tonight's cast</b><span>a question in the familiar's voice, answered by voice</span></div></div></div><div style="position:absolute;top:8280px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>Tonight's cast</b><span>a question in the familiar's voice, answered by voice</span></div></div></div><div style="position:absolute;top:7360px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="pill"><svg class="icon sm"><use href="#i-users"/></svg>night owls</span><span class="pill"><svg class="icon sm"><use href="#i-cal"/></svg>this weekend</span></div>
@@ -571,7 +558,7 @@ main{max-width:1440px;margin:0 auto}
       </div>
       <div class="tab"><div><div class="ic"><svg class="icon"><use href="#i-web"/></svg></div>web</div><div class="on"><div class="ic"><svg class="icon"><use href="#i-cast"/></svg></div>casts</div><div><div class="ic"><div class="crit moth" style="--s:30px"><svg><use href="#c-moth"/></svg></div></div>you</div></div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Out scouting</b><span>the familiar is visibly at work</span></div></div></div><div style="position:absolute;top:9200px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>Out scouting</b><span>the familiar is visibly at work</span></div></div></div><div style="position:absolute;top:8280px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="pill"><svg class="icon sm"><use href="#i-users"/></svg>night owls</span><span class="pill solid">3 found</span></div>
@@ -598,7 +585,7 @@ main{max-width:1440px;margin:0 auto}
       </div>
       <div class="tab"><div><div class="ic"><svg class="icon"><use href="#i-web"/></svg></div>web</div><div class="on"><div class="ic"><svg class="icon"><use href="#i-cast"/></svg></div>casts</div><div><div class="ic"><div class="crit moth" style="--s:30px"><svg><use href="#c-moth"/></svg></div></div>you</div></div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Swipe the weekend</b><span>right if you're in, left if not</span></div></div></div><div style="position:absolute;top:10120px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>Swipe the weekend</b><span>right if you're in, left if not</span></div></div></div><div style="position:absolute;top:9200px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span></span><span class="pill mint"><svg class="icon sm"><use href="#i-spark"/></svg>everyone's in</span></div>
@@ -622,7 +609,7 @@ main{max-width:1440px;margin:0 auto}
         <button class="cta glass" type="button">Meet at the 61C stop, 9:45</button>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Group match</b><span>the one all four swiped right</span></div></div></div><div style="position:absolute;top:11040px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen you">
+    </div></div><div class="cap"><b>Group match</b><span>the one all four swiped right</span></div></div></div><div style="position:absolute;top:10120px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen you">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="pad" style="margin-top:22px;display:flex;flex-direction:column;gap:18px">
@@ -643,7 +630,7 @@ main{max-width:1440px;margin:0 auto}
       </div>
       <div class="tab"><div><div class="ic"><svg class="icon"><use href="#i-web"/></svg></div>web</div><div><div class="ic"><svg class="icon"><use href="#i-cast"/></svg></div>casts</div><div class="on"><div class="ic"><div class="crit moth" style="--s:30px"><svg><use href="#c-moth"/></svg></div></div>you</div></div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>You</b><span>the creature is the profile</span></div></div></div><div style="position:absolute;top:11960px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
+    </div></div><div class="cap"><b>You</b><span>the creature is the profile</span></div></div></div><div style="position:absolute;top:11040px;left:40px"><div class="frame"><div class="phone"><div class="island"></div><div class="screen">
       <div class="sb"><span>9:41</span><svg width="78" height="14"><use href="#sb-right"/></svg></div>
       <div class="top">
         <div class="nav"><span class="rb"><svg class="icon"><use href="#i-chev-l"/></svg></span><span class="pill">tonight · 1 of 3</span></div>
@@ -667,7 +654,7 @@ main{max-width:1440px;margin:0 auto}
         <button class="cta glass" type="button">Share the recap</button>
       </div>
       <div class="homebar"></div><span class="syn">synthetic</span>
-    </div></div><div class="cap"><b>Daily recap</b><span>arrives every night, told by your familiar</span></div></div></div><div style="position:absolute;top:12880px;left:40px"><div class="frame"><div class="tv"><div class="screen">
+    </div></div><div class="cap"><b>Daily recap</b><span>arrives every night, told by your familiar</span></div></div></div><div style="position:absolute;top:11960px;left:40px"><div class="frame"><div class="tv"><div class="screen">
       <div class="stage">
         <div class="g">
           <svg id="stagegraph" viewBox="0 0 540 430"></svg>
