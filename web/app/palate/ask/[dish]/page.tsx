@@ -111,7 +111,7 @@ export default function PalateAsk() {
           They said no {chosen}
         </CTA>
         <CTA variant="ghost" onClick={() => router.push(href('/palate/menu'))}>
-          Keep it grey
+          {scored?.status === 'never' ? 'Keep it blocked' : 'Keep it grey'}
         </CTA>
       </div>
     </Screen>
