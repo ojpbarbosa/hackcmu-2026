@@ -2,6 +2,9 @@
  *  Safe to import from the client: no graph, no OSM data. */
 export type Venue = { id: string; name: string; lat: number; lng: number; hint: string };
 
+/** south, west, north, east — the box the walking graph covers. */
+export const OAKLAND_BBOX: [number, number, number, number] = [40.437, -79.965, 40.452, -79.935];
+
 export const VENUES: Venue[] = [
   { id: 'tepper', name: 'Tepper School', lat: 40.444097, lng: -79.945064, hint: 'CMU · Forbes at Tepper' },
   { id: 'gates', name: 'Gates Center', lat: 40.443358, lng: -79.944603, hint: 'CMU · computer science' },

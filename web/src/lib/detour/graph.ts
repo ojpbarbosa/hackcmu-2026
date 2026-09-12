@@ -1,8 +1,10 @@
 /** The Oakland walking graph. Server-side only — `oakland.json` is ~900 KB and must
  *  never reach the phone; the client gets the finished walk out of the room state. */
 import raw from './oakland.json';
+import { bearing, haversine, turnFrom, type LatLng } from './geo';
 
-export type LatLng = [number, number];
+export { bearing, haversine, turnFrom };
+export type { LatLng };
 
 export type Poi = {
   id: string;
@@ -29,33 +31,6 @@ type RawGraph = {
   edges: [string, string, number, string][];
   pois: Poi[];
 };
-
-const R = 6371000;
-const rad = (d: number) => (d * Math.PI) / 180;
-
-/** Metres between two lat/lng points. */
-export function haversine(a: LatLng, b: LatLng): number {
-  const dLat = rad(b[0] - a[0]);
-  const dLng = rad(b[1] - a[1]);
-  const s = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
-}
-
-/** Compass bearing in degrees from a to b. */
-export function bearing(a: LatLng, b: LatLng): number {
-  const y = Math.sin(rad(b[1] - a[1])) * Math.cos(rad(b[0]));
-  const x =
-    Math.cos(rad(a[0])) * Math.sin(rad(b[0])) - Math.sin(rad(a[0])) * Math.cos(rad(b[0])) * Math.cos(rad(b[1] - a[1]));
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
-}
-
-/** left / right / straight for a heading change. */
-export function turnFrom(before: number, after: number): 'left' | 'right' | 'straight' {
-  const d = ((after - before + 540) % 360) - 180;
-  if (d > 35) return 'right';
-  if (d < -35) return 'left';
-  return 'straight';
-}
 
 let cached: Graph | null = null;
 
