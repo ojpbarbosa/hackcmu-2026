@@ -25,6 +25,11 @@ export default function BumpPage() {
   const [address, setAddress] = useState('');
   const [keyError, setKeyError] = useState<string | null>(null);
 
+  // the query string only arrives after mount, so ?with= has to be adopted then
+  useEffect(() => {
+    if (withId) setOtherId((prev) => prev ?? withId);
+  }, [withId]);
+
   const onMatched = useCallback((m: { pairId: string; withMemberId: string }) => {
     setPairId(m.pairId);
     setOtherId(m.withMemberId);
@@ -88,6 +93,18 @@ export default function BumpPage() {
 
   const meeting = !!(pairId || otherId) && !bump;
   const phase = sensor.phase;
+
+  // the exchange is written server-side when the pair lands; if it never shows up,
+  // the other phone has not hatched a familiar
+  const [stalled, setStalled] = useState(false);
+  useEffect(() => {
+    if (!meeting) {
+      setStalled(false);
+      return;
+    }
+    const t = setTimeout(() => setStalled(true), 9000);
+    return () => clearTimeout(t);
+  }, [meeting]);
 
   return (
     <Screen app="fam" className="col">
@@ -166,8 +183,19 @@ export default function BumpPage() {
             </div>
             <div style={{ textAlign: 'center' }}>
               <H3>a phone answered</H3>
-              <Sub>the familiars are talking</Sub>
+              <Sub>{stalled ? 'nothing came back' : 'the familiars are talking'}</Sub>
             </div>
+            {stalled ? (
+              <Card className="col">
+                <Label>no exchange yet</Label>
+                <div style={{ marginTop: 8 }}>
+                  <BodySm>
+                    The other phone has probably not hatched a familiar yet. Have them open the room and answer the
+                    three questions, then bump again.
+                  </BodySm>
+                </div>
+              </Card>
+            ) : null}
           </>
         ) : (
           <>

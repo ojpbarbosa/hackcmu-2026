@@ -12,6 +12,11 @@ const LISTEN_MS = 30000;
 
 export type BumpPhase = 'idle' | 'blocked' | 'sensing' | 'waiting' | 'none';
 
+/** iOS hides the prompt entirely when Settings > Safari > Motion & Orientation
+ *  Access is off, so say where to look rather than just failing. */
+const MOTION_DENIED =
+  'motion is off for this site. Settings > Safari > Motion & Orientation Access, or key their address instead.';
+
 type MotionEventCtor = typeof DeviceMotionEvent & { requestPermission?: () => Promise<PermissionState | string> };
 
 export function motionNeedsPermission(): boolean {
@@ -195,12 +200,12 @@ export function useBumpSensor({
         .then((res) => {
           if (res === 'granted') attach();
           else {
-            setError('motion is blocked for this site. key their address instead.');
+            setError(MOTION_DENIED);
             setPhase('blocked');
           }
         })
         .catch(() => {
-          setError('motion is blocked for this site. key their address instead.');
+          setError(MOTION_DENIED);
           setPhase('blocked');
         });
       return;

@@ -136,6 +136,7 @@ showed the two orbs meeting with "the familiars are talking"
 | bump · sensing, live magnitude bar | `familiars_bump_room_SHOT2_simulate_1_auto_1.png` |
 | bump · paired | `familiars_bump_room_BUMPZ_simulate_1_auto_1.png` |
 | bump · exchange and result | `familiars_bump_room_SHOT2_last_1.png` |
+| bump · arrived by keyed address | `familiars_bump_room_SHOT2_with_shot_b.png` |
 | your night | `familiars_night_room_SHOTS.png` |
 | the one that got away | `familiars_away_room_SHOTS.png` |
 | stage (1280×720) | `familiars_stage_room_STAGE1.png`, `familiars_stage_room_EMPTY9_demo_1.png` |
