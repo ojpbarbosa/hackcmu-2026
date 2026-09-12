@@ -171,6 +171,30 @@ export default function YouPage() {
         </div>
       </div>
 
+      <div className="pad" style={{ marginTop: 26, marginBottom: 8 }}>
+        <button
+          className="cta ghost"
+          type="button"
+          style={{ color: 'var(--rose)' }}
+          onClick={async () => {
+            if (!window.confirm(`Delete ${me.name} and start over?`)) return;
+            try {
+              await act('forget');
+            } catch {
+              /* leaving anyway */
+            }
+            try {
+              window.localStorage.removeItem('hack.member.familiars');
+              window.localStorage.removeItem('familiars.salt');
+            } catch {
+              /* private mode */
+            }
+            window.location.href = withRoom('/familiars', code);
+          }}
+        >
+          Delete {me.name} and start over
+        </button>
+      </div>
       <Tabs active="you" code={code} me={me} />
     </div>
   );

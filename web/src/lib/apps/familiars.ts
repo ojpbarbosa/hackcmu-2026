@@ -380,6 +380,28 @@ async function reduce(prev: FamState, action: Action, ctx: Ctx): Promise<FamStat
       return { ...state, familiars: { ...state.familiars, [me]: familiar } };
     }
 
+    case 'forget': {
+      // start over: this person leaves the room entirely
+      const familiars = { ...state.familiars };
+      delete familiars[me];
+      const casting = { ...state.casting };
+      delete casting[me];
+      const intros: FamState['intros'] = {};
+      for (const [k, v] of Object.entries(state.intros)) if (!k.startsWith(`${me}:`) && v.to !== me && v.via !== me) intros[k] = v;
+      const recaps = { ...state.recaps };
+      delete recaps[me];
+      delete ctx.members[me];
+      return {
+        ...state,
+        familiars,
+        casting,
+        intros,
+        recaps,
+        pendingCasts: state.pendingCasts.filter((c) => c.from !== me),
+        pairs: state.pairs.filter((x) => x.a !== me && x.b !== me),
+      };
+    }
+
     case 'arm': {
       if (!state.familiars[me]) return state;
       return { ...state, casting: { ...state.casting, [me]: { armedAt: action.now } } };

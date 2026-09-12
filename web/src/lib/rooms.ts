@@ -75,7 +75,10 @@ export async function joinRoom(app: AppName, code: string, m: Omit<Member, 'join
     if (d.onJoin) doc.state = d.onJoin(doc.state, member);
     doc.version = before + 1;
     const current = await getRoom(app, c);
-    if (current && current.version !== before) continue;
+    if (current && current.version !== before) {
+      await new Promise((res) => setTimeout(res, 40 + Math.random() * 120));
+      continue;
+    }
     await store.set(roomKey(app, c), doc, TTL_SEC);
     return doc;
   }
@@ -83,10 +86,29 @@ export async function joinRoom(app: AppName, code: string, m: Omit<Member, 'join
 }
 
 /** load → reduce → version+1 → save. Retries three times on a version conflict. */
+/** Model calls inside a reducer are memoised for the life of one act(): a version
+ *  conflict then retries in milliseconds instead of re-running a 7 s completion,
+ *  which is what made slow actions (hatch, catch) lose every retry in a busy room. */
+function memoLlm(base: LLM): LLM {
+  const memo = new Map<string, Promise<{ data: unknown; meta: import('./types').ObserveEvent }>>();
+  return {
+    json<T>(task: Parameters<LLM['json']>[0], input: object, opts: Parameters<LLM['json']>[2]) {
+      const key = `${task}:${JSON.stringify(input)}`;
+      let hit = memo.get(key);
+      if (!hit) {
+        hit = base.json(task, input, opts as never) as Promise<{ data: unknown; meta: import('./types').ObserveEvent }>;
+        memo.set(key, hit);
+      }
+      return hit as ReturnType<LLM['json']> as Promise<{ data: T; meta: import('./types').ObserveEvent }>;
+    },
+  };
+}
+
 export async function act(app: AppName, code: string, action: Action): Promise<RoomDoc> {
   const c = code.toUpperCase();
   let lastError: unknown = null;
-  for (let i = 0; i < 3; i++) {
+  const llmForThisAct = memoLlm(llm);
+  for (let i = 0; i < 12; i++) {
     const doc = (await getRoom(app, c)) ?? (await createRoom(app, c));
     const before = doc.version;
 
@@ -97,7 +119,7 @@ export async function act(app: AppName, code: string, action: Action): Promise<R
     } else {
       const m = doc.members[action.memberId];
       if (m) m.lastSeen = now();
-      const ctx: Ctx = { app, code: c, llm, members: doc.members };
+      const ctx: Ctx = { app, code: c, llm: llmForThisAct, members: doc.members };
       try {
         doc.state = await def(app).reduce(doc.state, action, ctx);
       } catch (e) {
@@ -108,7 +130,10 @@ export async function act(app: AppName, code: string, action: Action): Promise<R
 
     doc.version = before + 1;
     const current = await getRoom(app, c);
-    if (current && current.version !== before) continue;
+    if (current && current.version !== before) {
+      await new Promise((res) => setTimeout(res, 40 + Math.random() * 120));
+      continue;
+    }
     await store.set(roomKey(app, c), doc, TTL_SEC);
     return doc;
   }
