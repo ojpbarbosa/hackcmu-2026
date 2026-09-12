@@ -55,7 +55,6 @@ async function search(query: string): Promise<SearchHit[]> {
       complianceScene: 'abroad',
     },
     doc: { include: { images: true } },
-    sort: { pageAge: '' },
   });
   return (body.results?.result ?? [])
     .filter((r) => !!r.url)
@@ -215,6 +214,18 @@ export async function runScout(
     console.error('[scout] fallback to cached:', msg);
     return { cards: cachedCards(), status: [...status, `Search failed: ${msg}`, 'Using cached results'] };
   }
+}
+
+/** For /api/scout/debug?raw=…: POST any body to /search and return status + text. */
+export async function rawQuerit(path: string, body: unknown): Promise<{ status: number; text: string }> {
+  const key = process.env.QUERIT_API_KEY ?? '';
+  const r = await fetch(`${QUERIT_BASE().replace(/\/$/, '')}${path}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  return { status: r.status, text: (await r.text()).slice(0, 1200) };
 }
 
 /** For /api/scout/debug: the raw provider calls, so a failure is visible without logs. */
