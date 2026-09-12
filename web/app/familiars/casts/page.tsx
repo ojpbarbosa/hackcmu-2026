@@ -86,6 +86,18 @@ export default function CastsPage() {
     [state, me],
   );
 
+  // ?go=1 (the override from the web home): start the search on arrival
+  const autoRef = useRef(false);
+  const sendOutRef = useRef<(() => Promise<void>) | null>(null);
+  useEffect(() => {
+    if (autoRef.current || !me || !state) return;
+    if (new URLSearchParams(window.location.search).get('go') !== '1') return;
+    autoRef.current = true;
+    if (!state.scout) void sendOutRef.current?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me, state]);
+
+
   if (!state || !me) {
     return (
       <div className="scr has-tabs">
@@ -117,15 +129,7 @@ export default function CastsPage() {
     }
   };
 
-  // ?go=1 (the override from the web home): start the search on arrival
-  const autoRef = useRef(false);
-  useEffect(() => {
-    if (autoRef.current || !me || !state) return;
-    if (new URLSearchParams(window.location.search).get('go') !== '1') return;
-    autoRef.current = true;
-    if (!state.scout) void sendOut();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me, state]);
+  sendOutRef.current = sendOut;
 
   // ---- the one everyone swiped right ------------------------------------
   if (tab === 'out' && match) {
