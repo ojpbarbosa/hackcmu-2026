@@ -1134,7 +1134,8 @@
 .dusk button.pill, .dusk a.pill { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: var(--glass2); border: 1px solid var(--line); font: 600 13px/1 var(--sys); color: var(--tx); }
 
 /* screens that must fit any phone height: flow instead of pinning, scroll when short */
-.scr.flow { display: flex; flex-direction: column; min-height: 100%; height: auto; }
+.scr.flow { display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
+.scr.flow > * { flex-shrink: 0; }
 .scr.flow .top { position: static; }
 .scr.flow .bottom { position: static; margin-top: auto; padding-top: 22px; }
 .scr.flow .pad { margin-top: 10px !important; }
@@ -1178,3 +1179,8 @@ body { background: #0f1133; }
 .swipe button { width: 76px; height: 76px; font-size: 26px; }
 .swipe .no { background: rgba(255,122,162,.14); border-color: rgba(255,122,162,.5); }
 .swipehint { text-align: center; font: 700 12px/1 var(--sys); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); margin-top: 8px; }
+
+/* every screen scrolls inside the device; the tab bar stays pinned to the device */
+.device { display: flex; flex-direction: column; }
+.scr { flex: 1 1 auto; min-height: 0; }
+.scr.flow .bottom { margin-top: auto; }
