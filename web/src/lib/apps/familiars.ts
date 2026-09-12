@@ -281,7 +281,13 @@ function seedDemo(state: FamState, n: number, at: number): FamState {
     const b = added[(i * 3 + 1) % added.length];
     if (!a || !b || a.id === b.id) continue;
     if (bumps.some((x) => (x.a === a.id && x.b === b.id) || (x.a === b.id && x.b === a.id))) continue;
-    const raw = exchangeMock({ a: { name: a.name }, b: { name: b.name } }, hash(`${a.id}:${b.id}`));
+    const raw = exchangeMock(
+      {
+        a: { name: a.name, seeds: a.seeds, keywords: a.keywords, human: a.human.name, seat: a.human.seat },
+        b: { name: b.name, seeds: b.seeds, keywords: b.keywords, human: b.human.name, seat: b.human.seat },
+      },
+      hash(`${a.id}:${b.id}`),
+    );
     bumps.push({
       id: `demo_pair_${i}`,
       a: a.id,
@@ -401,7 +407,13 @@ async function reduce(state: FamState, action: Action, ctx: Ctx): Promise<FamSta
           bumps: mine.map((b) => {
             const otherId = b.a === me.id ? b.b : b.a;
             const other = state.familiars[otherId];
-            return { with: other?.name ?? 'someone', youBoth: b.youBoth, line: b.dialogue[b.dialogue.length - 1]?.text ?? '' };
+            const theirSide = b.a === me.id ? 'b' : 'a';
+            const theirLines = b.dialogue.filter((d) => d.who === theirSide);
+            return {
+              with: other?.name ?? 'someone',
+              youBoth: b.youBoth,
+              line: theirLines[theirLines.length - 1]?.text ?? '',
+            };
           }),
           clusters: state.clusters.map((c) => ({ label: c.label, size: c.members.length, mine: c.id === me.clusterId })),
           roomSize: Object.keys(state.familiars).length,
