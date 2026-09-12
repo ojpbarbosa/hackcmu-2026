@@ -2,8 +2,11 @@ import { pick } from './_seed';
 
 /** Deterministic stand-in for detour.story: the arrival card. */
 
-const TITLES = [
-  'six blocks you had never turned',
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+const word = (n: number) => WORDS[n] ?? String(n);
+
+const titles = (n: number) => [
+  `${word(n)} corners you had never turned`,
   'the long way, on purpose',
   'you found the back of the hill',
   'a walk with the map switched off',
@@ -19,7 +22,11 @@ export default function mock(input: Input, seed: number) {
   const n = stats.newPlaces ?? input?.places?.length ?? 6;
   const km = stats.km ?? 2.9;
   const first = input?.places?.[0]?.name;
-  const title = n >= 6 ? pick(TITLES, seed) : pick([TITLES[1], TITLES[3]], seed);
+  const all = titles(n);
+  const title = n >= 4 ? pick(all, seed) : pick([all[1], all[3]], seed);
+  if (n === 0) {
+    return { title, line: `${km} km on the slow line, and you never saw the route.` };
+  }
   const tail = first ? ` You would not have found ${first} on the direct route.` : '';
   return {
     title,
