@@ -21,8 +21,14 @@ async function querit<T>(path: string, body: object): Promise<T> {
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
-  if (!r.ok) throw new Error(`querit ${path} ${r.status}`);
-  return (await r.json()) as T;
+  if (!r.ok) {
+    const text = (await r.text().catch(() => '')).slice(0, 300);
+    console.error(`[querit] ${path} ${r.status} ${text}`);
+    throw new Error(`querit ${path} ${r.status} ${text}`);
+  }
+  const json = (await r.json()) as T;
+  console.log(`[querit] ${path} ${r.status} ok`, JSON.stringify(body).slice(0, 160));
+  return json;
 }
 
 type QueritResult = {
@@ -137,13 +143,15 @@ export async function runScout(
       }
     }
     const top = hits.slice(0, 4);
+    console.log('[scout] plan', JSON.stringify(plan.data.queries), 'hits', top.length);
     status.push(`Reading ${top.length} pages`);
 
     const pages = await Promise.all(
       top.map(async (h) => {
         try {
           return { hit: h, page: await fetchPage(h.url) };
-        } catch {
+        } catch (e) {
+          console.error('[scout] contents failed', h.url, String(e).slice(0, 200));
           return null;
         }
       }),
@@ -171,8 +179,8 @@ export async function runScout(
           image: p.page.og?.image ?? p.hit.image,
           why: p.hit.snippet?.slice(0, 90) ?? `Close to ${keywords[0] ?? 'what you all said'}.`,
         });
-      } catch {
-        /* one bad page does not end the scout */
+      } catch (e) {
+        console.error('[scout] extract failed', p.hit.url, String(e).slice(0, 200));
       }
       if (cards.length === 3) break;
     }
@@ -201,8 +209,29 @@ export async function runScout(
 
     status.push('Choosing three');
     return { cards: cards.slice(0, 3), status };
-  } catch {
+  } catch (e) {
     // no key, no provider, or the provider fell over: say it is cached, never pretend
-    return { cards: cachedCards(), status: CACHED_STATUS };
+    const msg = String(e instanceof Error ? e.message : e).slice(0, 160);
+    console.error('[scout] fallback to cached:', msg);
+    return { cards: cachedCards(), status: [...status, `Search failed: ${msg}`, 'Using cached results'] };
   }
+}
+
+/** For /api/scout/debug: the raw provider calls, so a failure is visible without logs. */
+export async function debugQuerit(q: string): Promise<{ keyPresent: boolean; base: string; search?: unknown; contents?: unknown; error?: string }> {
+  const out: { keyPresent: boolean; base: string; search?: unknown; contents?: unknown; error?: string } = {
+    keyPresent: !!process.env.QUERIT_API_KEY,
+    base: QUERIT_BASE(),
+  };
+  try {
+    const hits = await search(q);
+    out.search = hits.slice(0, 3);
+    if (hits[0]) {
+      const page = await fetchPage(hits[0].url);
+      out.contents = { url: hits[0].url, chars: page.text.length, head: page.text.slice(0, 400) };
+    }
+  } catch (e) {
+    out.error = String(e instanceof Error ? e.message : e).slice(0, 400);
+  }
+  return out;
 }

@@ -330,20 +330,24 @@ export default function HatchPage() {
         </button>
         {!typed && (
           <>
-            <div className="wave">
-              {Array.from({ length: 9 }, (_, i) => (
-                <i key={i} style={{ height: `${6 + level * 14 + (i % 3) * 3}px` }} />
-              ))}
-            </div>
+            {listening ? (
+              <div className="wave">
+                {Array.from({ length: 9 }, (_, i) => (
+                  <i key={i} style={{ height: `${6 + level * 14 + (i % 3) * 3}px` }} />
+                ))}
+              </div>
+            ) : (
+              <p className="lbl" style={{ height: 20 }}>tap to talk</p>
+            )}
             <button
-              className="mic"
+              className={listening ? 'mic live' : 'mic idle'}
               type="button"
               aria-label={listening ? 'stop' : 'start'}
               onClick={() => (listening ? stop() : void start())}
             >
               <Icon name="mic" />
             </button>
-            <p className="mute">{mmss(elapsed)}</p>
+            <p className="mute">{elapsed ? mmss(elapsed) : ' '}</p>
           </>
         )}
       </div>

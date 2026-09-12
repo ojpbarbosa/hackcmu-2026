@@ -744,7 +744,7 @@
 .web {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 340px;
 }
 .web > svg {
   position: absolute;
@@ -1196,3 +1196,12 @@ body { background: #0f1133; }
 .castrow b { display: block; font: 700 14px/1.1 var(--sys); color: var(--tx); }
 .castrow small { font: 500 12px/1.2 var(--sys); color: var(--mute); }
 .castrow .chip.on { height: 32px; font-weight: 700; }
+
+/* the mic is quiet until tapped */
+.mic.idle { background: var(--glass2); color: var(--tx); box-shadow: none; }
+.mic.idle::before, .mic.idle::after { animation: none; opacity: 0; }
+.mic.live { background: #fff; color: #0f1133; }
+/* tighter web home */
+.missing { padding: 6px 14px 6px 6px; }
+.todaycard { padding: 10px 14px; }
+.scr.flow .bottom { padding-top: 12px; }
