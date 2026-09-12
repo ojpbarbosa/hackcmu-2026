@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Screen, TopNav, Pill, CTA, H1, Icon, Chip } from '@/ui';
 import { MOODS, OAKLAND_BBOX, VENUES, venueByName } from '@/lib/detour/venues';
@@ -47,10 +47,16 @@ export default function DetourSetOut() {
   const [mood, setMood] = useState<string>(MOODS[0]);
   const [busy, setBusy] = useState(false);
 
+  // The clock is client-only: formatting Date.now() during render makes the server
+  // HTML disagree with the first paint and React throws a hydration error.
+  const [mountedAt, setMountedAt] = useState<number | null>(null);
+  useEffect(() => setMountedAt(Date.now()), []);
+
   const arriveBy = useMemo(() => {
-    const t = new Date(Date.now() + budget * 60_000);
+    if (mountedAt === null) return null;
+    const t = new Date(mountedAt + budget * 60_000);
     return t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
-  }, [budget]);
+  }, [mountedAt, budget]);
 
   const startWalking = useCallback(async () => {
     if (busy || !code) return;
@@ -105,7 +111,7 @@ export default function DetourSetOut() {
             label="end at"
             icon="flag"
             value={endpoint}
-            sub={`arrive by ${arriveBy}`}
+            sub={arriveBy ? `arrive by ${arriveBy}` : 'arrive by …'}
             onChange={setEndpoint}
           />
 

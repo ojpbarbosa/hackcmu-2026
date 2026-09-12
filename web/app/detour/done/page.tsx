@@ -98,7 +98,9 @@ export default function DetourDone() {
             <Stat value={places.length} label="new to you" accent />
             <Stat value={`${walk.phoneLooks}×`} label="looked at phone" />
           </div>
-          <div className="places">
+          {/* three real place names plus "+N" overflow a 393 px row and the last
+              one gets cut mid-word, so let the row wrap instead of clipping */}
+          <div className="places" style={{ flexWrap: 'wrap', rowGap: 8 }}>
             {places.slice(0, 3).map((p) => (
               <span className="pl" key={p!.id}>
                 <i>
