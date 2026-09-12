@@ -1,94 +1,85 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { Screen, H1, Body, BodySm, Label } from '@/ui';
+import { useState } from 'react';
+import { useFamiliars } from '../_components/useFamiliars';
 
-/** Screenshot and demo helper: fills a room with two hatched familiars that have
- *  already bumped, seeds the demo village, writes this device's identity as the
- *  first of the two, and jumps to the screen you asked for.
- *
- *  /familiars/dev?room=SHOTS&to=/familiars/me
- *
- *  Everything it does goes through the same public actions a phone uses; there is
- *  no back door into the state. */
-const A = { id: 'shot_a', name: 'Joao', seat: '2nd floor, by the windows' };
-const B = { id: 'shot_b', name: 'Ana', seat: 'Tepper atrium, near the coffee' };
+const DEMO_TRANSCRIPT =
+  "I'm Sam, they/them. I build modular synths at 3 am and I'm from Recife. Lately I can't stop soldering.";
 
-const SEEDS_A = ['I solder eurorack modules in a dorm room', 'Recife, then Pittsburgh', 'Night owl, obviously'];
-const SEEDS_B = ['I patch tape loops into synths', 'Lagos, then Pittsburgh', 'I read menus for fun'];
-
-export default function DevSeedPage() {
+export default function DevPage() {
+  const { code, member, state, act, connected, events } = useFamiliars();
   const [log, setLog] = useState<string[]>([]);
-  const ran = useRef(false);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (ran.current) return;
-    ran.current = true;
-    const params = new URLSearchParams(window.location.search);
-    const code = (params.get('room') ?? 'SHOTS').toUpperCase();
-    const to = params.get('to') ?? '/familiars/me';
-    const say = (s: string) => setLog((l) => [...l, s]);
-
-    const act = (name: string, payload: unknown, memberId: string) =>
-      fetch(`/api/rooms/familiars/${code}/act`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name, payload, memberId }),
-      });
-
-    (async () => {
-      const doc = (await fetch(`/api/rooms/familiars/${code}?v=0`, { cache: 'no-store' })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null)) as { doc?: { state?: { familiars?: Record<string, unknown> } } } | null;
-      const already = !!doc?.doc?.state?.familiars?.[A.id];
-      const t = Date.now();
-
-      if (already) {
-        say('room already seeded');
-      } else {
-        for (const [who, seeds] of [
-          [A, SEEDS_A],
-          [B, SEEDS_B],
-        ] as const) {
-          await act('join', { id: who.id, name: who.name, tone: who.id === A.id ? 1 : 2, seat: who.seat }, who.id);
-          await act('hatch', { seeds, human: { name: who.name, seat: who.seat } }, who.id);
-        }
-        say('two familiars hatched');
-
-        for (const [who, at] of [
-          [A, t],
-          [B, t + 150],
-        ] as const) {
-          await fetch('/api/bump', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ app: 'familiars', code, memberId: who.id, at, magnitude: 18.4 }),
-          });
-        }
-        say('bumped, 150 ms apart');
-
-        await act('seedDemo', { n: 40 }, A.id);
-        await act('story', {}, A.id);
-        say('village seeded, story written');
-      }
-
-      window.localStorage.setItem(
-        'hack.member.familiars',
-        JSON.stringify({ id: A.id, name: A.name, tone: 1, joinedAt: t, lastSeen: t, seat: A.seat }),
-      );
-      window.location.assign(`${to}${to.includes('?') ? '&' : '?'}room=${code}`);
-    })().catch((e) => say(`failed: ${e instanceof Error ? e.message : String(e)}`));
-  }, []);
+  const run = async (label: string, name: string, payload?: unknown) => {
+    if (busy) return;
+    setBusy(true);
+    setLog((l) => [`${label}…`, ...l]);
+    try {
+      await act(name, payload);
+      setLog((l) => [`${label} ok`, ...l]);
+    } catch (e) {
+      setLog((l) => [`${label} failed: ${e instanceof Error ? e.message : String(e)}`, ...l]);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
-    <Screen app="fam" className="col">
-      <div className="pad col" style={{ gap: 12, marginTop: 40 }}>
-        <Label>dev</Label>
-        <H1>seeding a room</H1>
-        <Body>Two familiars, one bump, forty demo villagers, one story. Then this device becomes Joao.</Body>
-        {log.map((l) => (
-          <BodySm key={l}>{l}</BodySm>
+    <div className="scr" style={{ padding: '28px 22px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+      <p className="lb lbl">dev</p>
+      <p className="d2 h2">room {code ?? '…'}</p>
+      <p className="s mute">
+        {connected ? 'connected' : 'offline'} · member {member?.id ?? 'none'} · {Object.keys(state?.familiars ?? {}).length} familiars
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <button className="cta glow gold" type="button" disabled={busy} onClick={() => run('hatch as demo', 'hatch', { transcript: DEMO_TRANSCRIPT })}>
+          Hatch as demo
+        </button>
+        <button className="cta glass ghost" type="button" disabled={busy} onClick={() => run('seedDemo(12)', 'seedDemo', { n: 12 })}>
+          seedDemo(12)
+        </button>
+        <button className="cta glass ghost" type="button" disabled={busy} onClick={() => run('castNow', 'castNow')}>
+          castNow
+        </button>
+        <button
+          className="cta glass ghost"
+          type="button"
+          disabled={busy}
+          onClick={() =>
+            run('scout', 'scout', {
+              brief: Object.values(state?.familiars ?? {})
+                .flatMap((f) => f.keywords)
+                .slice(0, 8)
+                .join(', '),
+            })
+          }
+        >
+          scout
+        </button>
+        <button className="cta glass ghost" type="button" disabled={busy} onClick={() => run('recap', 'recap')}>
+          recap
+        </button>
+      </div>
+
+      <div className="glass" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <p className="lb lbl">last 10 model calls</p>
+        {events.slice(-10).reverse().map((e, i) => (
+          <p className="s mute" key={`${e.ts}-${i}`}>
+            {e.task} · {e.model} · {e.latencyMs} ms{e.ok ? '' : ' · error'}
+            {e.fallback ? ' · fallback' : ''}
+          </p>
+        ))}
+        {events.length === 0 ? <p className="s mute">nothing yet</p> : null}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {log.map((l, i) => (
+          <p className="s mute" key={`${l}-${i}`}>
+            {l}
+          </p>
         ))}
       </div>
-    </Screen>
+    </div>
   );
 }

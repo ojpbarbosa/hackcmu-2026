@@ -1,135 +1,93 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { StagePage, ModelLadder, Pill, H2, H3, Body, Label } from '@/ui';
-import { useRoom } from '@/hooks/useRoom';
-import { matchScore, type FamState } from '@/lib/apps/familiars';
-import { Village, type VillageLink, type VillageNode } from '../_components/Village';
-import { DEFAULT_ROOM } from '../_components/useFamiliars';
+import { useMemo } from 'react';
+import { Creature } from '../_components/Creature';
+import { useFamiliars } from '../_components/useFamiliars';
+import { hash } from '@/lib/ids';
 
-const GREY = '#4B5563';
+/** The projector. No tabs, no phone: the room watching itself. */
+export default function StagePage() {
+  const { code, state, events, members } = useFamiliars();
 
-export default function FamiliarsStage() {
-  const [code, setCode] = useState<string | null>(null);
-  const [demo, setDemo] = useState(false);
-  const seeded = useRef(false);
-  const { state, events, members } = useRoom<FamState>('familiars', code, null);
-
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    setCode((p.get('room') ?? DEFAULT_ROOM).toUpperCase());
-    setDemo(p.get('demo') === '1');
-  }, []);
-
-  // a projector with three dots is not a village: fill it on request
-  useEffect(() => {
-    if (!demo || !code || seeded.current) return;
-    // a room that does not exist yet is the emptiest room of all: seedDemo creates it
-    if (state && Object.keys(state.familiars).length >= 20) return;
-    seeded.current = true;
-    fetch(`/api/rooms/familiars/${code}/act`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ name: 'seedDemo', payload: { n: 40 }, memberId: 'stage' }),
-    }).catch(() => {
-      seeded.current = false;
-    });
-  }, [demo, code, state]);
-
-  // stable identities: the force layout restarts whenever these arrays change
   const familiars = useMemo(() => Object.values(state?.familiars ?? {}), [state]);
-  const bumps = useMemo(() => state?.bumps ?? [], [state]);
-  const clusters = useMemo(() => state?.clusters ?? [], [state]);
 
-  const bumpCount = useMemo(() => {
-    const n = new Map<string, number>();
-    for (const b of bumps) {
-      n.set(b.a, (n.get(b.a) ?? 0) + 1);
-      n.set(b.b, (n.get(b.b) ?? 0) + 1);
+  const counts = useMemo(() => {
+    const pairs = state?.pairs ?? [];
+    const met = new Set<string>();
+    for (const p of pairs) {
+      met.add(p.a);
+      met.add(p.b);
     }
-    return n;
-  }, [bumps]);
+    const introduced = Object.keys(state?.intros ?? {}).length;
+    const castIds = new Set<string>();
+    for (const c of state?.pendingCasts ?? []) castIds.add(c.from);
+    for (const id of Object.keys(state?.casting ?? {})) castIds.add(id);
+    const neverCast = familiars.filter((f) => !castIds.has(f.id) && !met.has(f.id)).length;
+    return { met: met.size, introduced, neverCast };
+  }, [state, familiars]);
 
-  const nodes: VillageNode[] = useMemo(
-    () =>
-      familiars.map((f) => {
-        const met = bumpCount.get(f.id) ?? 0;
-        return {
-          id: f.id,
-          name: f.name,
-          color: met ? (clusters.find((c) => c.id === f.clusterId)?.color ?? GREY) : GREY,
-          r: Math.min(14, 5 + met * 1.6),
-          lonely: met === 0,
-        };
-      }),
-    [familiars, clusters, bumpCount],
-  );
-
-  const links: VillageLink[] = useMemo(() => bumps.map((b) => ({ source: b.a, target: b.b })), [bumps]);
-
-  // the two freshest meetings get named on the projector
-  const highlights = useMemo(() => {
-    const last = bumps.slice(-2);
-    return last.flatMap((b) => {
-      const a = state?.familiars[b.a];
-      const c = state?.familiars[b.b];
-      if (!a || !c) return [];
-      const pct = Math.round(matchScore(a, c) * 100);
-      return [{ id: a.id, text: `${a.name} ↔ ${c.name}${pct > 0 ? ` · ${pct}%` : ''}`, ring: [a.id, c.id] }];
-    });
-  }, [bumps, state]);
-
-  const rings = useMemo(() => new Set(highlights.flatMap((h) => h.ring)), [highlights]);
-
-  const lonely = nodes.filter((n) => n.lonely).length;
-  const biggest = [...clusters].sort((a, b) => b.members.length - a.members.length)[0];
+  const last = useMemo(() => {
+    const pairs = state?.pairs ?? [];
+    const p = pairs[pairs.length - 1];
+    if (!p || !state) return null;
+    const a = state.familiars[p.a];
+    const b = state.familiars[p.b];
+    if (!a || !b) return null;
+    return { a, b, youBoth: p.youBoth };
+  }, [state]);
 
   return (
-    <div className="app-fam">
-      <StagePage
-        side={
-          <>
-            <Label>
-              HackCMU · Tepper · {code ?? '…'}
-            </Label>
-            <H3>
-              {familiars.length} familiars, {bumps.length} bumps
-            </H3>
-            <Body>
-              {clusters.length} clusters. {biggest ? `The ${biggest.label} cluster is loudest.` : 'The room is still forming.'}{' '}
-              {lonely} {lonely === 1 ? 'familiar has' : 'familiars have'} never bumped.
-            </Body>
-            <div className="legend">
-              {clusters.map((c) => (
-                <div key={c.id}>
-                  <i style={{ background: c.color }} />
-                  {c.label} · {c.members.length}
-                </div>
-              ))}
-              <div>
-                <i style={{ background: GREY }} />
-                never bumped
-              </div>
+    <div className="scr" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '28px 22px 22px' }}>
+      <div className="between" style={{ alignItems: 'flex-end' }}>
+        <div>
+          <p className="lb lbl">Tepper · tonight</p>
+          <p className="d2 h2">{familiars.length} familiars</p>
+          <p className="t body">
+            {counts.met} met · {counts.introduced} introduced · {counts.neverCast} never cast
+          </p>
+        </div>
+        <span className="pill chip">
+          {members.length} phones · {code ?? '…'}
+        </span>
+      </div>
+
+      <div style={{ position: 'relative', flex: 1, minHeight: 260, marginTop: 16 }}>
+        {familiars.map((f) => {
+          const h = hash(f.id);
+          const left = 6 + (h % 86);
+          const top = 4 + ((h >>> 7) % 80);
+          return (
+            <div key={f.id} style={{ position: 'absolute', left: `${left}%`, top: `${top}%`, transform: 'translate(-50%,-50%)' }}>
+              <Creature traits={f.traits} size={40} glow={false} />
             </div>
-            <div className="foot">
-              <Label>models</Label>
-              <ModelLadder events={events} />
-            </div>
-          </>
-        }
-      >
-        <div className="between" style={{ alignItems: 'flex-end' }}>
-          <div>
-            <Label>the stage</Label>
-            <H2>the village, live all night</H2>
+          );
+        })}
+        {familiars.length === 0 ? <p className="s mute">the room is still forming.</p> : null}
+      </div>
+
+      {last ? (
+        <div className="glass" style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+          <Creature traits={last.a.traits} size={52} glow />
+          <Creature traits={last.b.traits} size={52} glow />
+          <div style={{ flex: 1 }}>
+            <p className="t body" style={{ color: '#fff', fontWeight: 600 }}>
+              {last.a.name} and {last.b.name} are on stage
+            </p>
+            <p className="s mute">&ldquo;{last.youBoth}&rdquo;</p>
           </div>
-          <Pill variant="soft">
-            {members.length} phones · {events.length} model calls
-          </Pill>
         </div>
-        <div className="graph" style={{ flex: 1, minHeight: 460, position: 'relative' }}>
-          <Village nodes={nodes} links={links} highlights={highlights} rings={rings} />
+      ) : null}
+
+      <div style={{ marginTop: 12 }}>
+        <p className="lb lbl">models</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
+          {events.slice(-6).map((e, i) => (
+            <p className="s mute" key={`${e.ts}-${i}`}>
+              {e.task} · {e.model} · {e.latencyMs} ms{e.fallback ? ' · fallback' : ''}
+            </p>
+          ))}
+          {events.length === 0 ? <p className="s mute">no model calls yet</p> : null}
         </div>
-      </StagePage>
+      </div>
     </div>
   );
 }
