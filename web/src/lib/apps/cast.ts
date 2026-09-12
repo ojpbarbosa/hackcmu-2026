@@ -377,8 +377,10 @@ export const cast: AppDef<CastState> = {
 
       case 'castNow': {
         const open = state.casts[0];
-        // two phones tapping at once must not open two casts
-        if (open && !open.seeded && Math.abs(at - open.openedAt) < 2_000) return state;
+        // two phones tapping at once must not open two casts; a cast nobody has
+        // answered yet, opened a moment ago, is that double tap
+        const justOpened = !!open && !open.seeded && at - open.openedAt >= 0 && at - open.openedAt < 2_000;
+        if (justOpened && Object.keys(open.answers).length === 0) return state;
         return openCast(state, ctx, at);
       }
 

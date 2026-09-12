@@ -65,6 +65,21 @@ describe('cast reducer', () => {
     expect(s0.casts.map((h) => h.prompt)).not.toContain(c.prompt);
   });
 
+  it('swallows a double tap on Cast now but allows the next real cast', async () => {
+    let s = cast.initial('TEST');
+    const members = [A, B];
+    s = await run(s, members, 'castNow', {}, A.id, 1000);
+    const one = s.casts.length;
+    s = await run(s, members, 'castNow', {}, B.id, 1400); // the second phone, same moment
+    expect(s.casts.length).toBe(one);
+
+    s = await run(s, members, 'answer', { castId: latest(s).id, text: 'a' }, A.id, 1500);
+    s = await run(s, members, 'answer', { castId: latest(s).id, text: 'b' }, B.id, 1600);
+    s = await run(s, members, 'castNow', {}, A.id, 1700); // answered: a new cast is meant
+    expect(s.casts.length).toBe(one + 1);
+    expect(latest(s).prompt).not.toBe(s.casts[1].prompt);
+  });
+
   it('reveals only once every member has answered', async () => {
     let s = cast.initial('TEST');
     const members = [A, B, C];
