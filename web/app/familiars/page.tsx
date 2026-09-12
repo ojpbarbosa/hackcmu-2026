@@ -201,7 +201,6 @@ export default function HatchPage() {
   /* ------------------------------------------------------------------ hatched */
   const [talkMood, setTalkMood] = useState(true);
   const [canHear, setCanHear] = useState(true);
-  const [salt, setSalt] = useState(0);
 
   useEffect(() => {
     if (!me) return;
@@ -241,7 +240,7 @@ export default function HatchPage() {
   }, [me]);
 
   if (me) {
-    const traits = salt ? traitsFor(`${me.id}:${salt + 1}`) : me.traits;
+    const traits = me.traits;
     return (
       <div className="scr flow">
         <div className="top">
@@ -265,23 +264,8 @@ export default function HatchPage() {
               Hear {me.name}
             </button>
           )}
-          <button
-            className="cta ghost"
-            type="button"
-            onClick={() => {
-              const next = salt + 1;
-              setSalt(next);
-              try {
-                window.localStorage.setItem('familiars.salt', String(next));
-              } catch {
-                /* private mode */
-              }
-            }}
-          >
-            Not quite me
-          </button>
-          <button className="cta" type="button" onClick={() => router.push(withRoom('/familiars/meet', code))}>
-            Meet someone
+          <button className="cta" type="button" onClick={() => router.push(withRoom('/familiars/web', code))}>
+            Continue
           </button>
         </div>
       </div>
