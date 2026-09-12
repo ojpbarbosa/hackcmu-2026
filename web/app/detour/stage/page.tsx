@@ -5,6 +5,8 @@ import type { LatLng } from '@/lib/detour/geo';
 import { FogMap } from '../_components/FogMap';
 import { useDetour } from '../_components/useDetour';
 
+const STAGE_PADDING = { top: 64, bottom: 64, left: 72, right: 72 };
+
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 
 /** Ease the projector's marker between the phone's position reports. */
@@ -33,7 +35,15 @@ export default function DetourStage() {
 
   const walk = state?.focus ? (state.walks[state.focus] ?? null) : (Object.values(state?.walks ?? {})[0] ?? null);
 
-  const route = useMemo(() => (walk ? walk.walk.legs.flatMap((l) => l.path as LatLng[]) : []), [walk]);
+  // the doc arrives again every poll; the camera must only re-fit for a new walk
+  const walkId = walk?.id ?? null;
+  const walkRef = useRef(walk);
+  walkRef.current = walk;
+  const route = useMemo(
+    () => walkRef.current?.walk.legs.flatMap((l) => l.path as LatLng[]) ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one walk, one route
+    [walkId],
+  );
   const fit = useMemo(() => (route.length > 1 ? route : null), [route]);
   const pos = useSmoothed(walk ? [walk.progress.lat, walk.progress.lng] : null);
 
@@ -136,6 +146,7 @@ export default function DetourStage() {
             heading={walk?.progress.heading ?? 0}
             showMarker={!!walk}
             fit={fit}
+            fitPadding={STAGE_PADDING}
           />
         </div>
       </StagePage>

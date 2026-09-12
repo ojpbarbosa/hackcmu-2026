@@ -69,7 +69,7 @@ const LAST_CLAUSE = [
 
 const STEPS = ['take the stairs, not the ramp', 'up the steps, slowly'];
 
-function sentence(leg: MockLeg, seed: number): string {
+function sentence(leg: MockLeg, seed: number, used: Map<string, number>): string {
   const turn = OPEN[leg.turn ?? 'straight'] ?? OPEN.straight;
   const open = pick(turn, seed);
   const streets = leg.streets ?? [];
@@ -77,16 +77,20 @@ function sentence(leg: MockLeg, seed: number): string {
   if (leg.last) return `${open} ${pick(LAST_CLAUSE, seed)}`;
   const kind = leg.poi?.kind ?? '';
   const clause = BY_KIND[kind] ?? DEFAULT_CLAUSE;
-  return `${open} ${pick(clause, seed)}`;
+  // three statues in a row should not get the same sentence three times
+  const n = used.get(kind) ?? 0;
+  used.set(kind, n + 1);
+  return `${open} ${pick(clause, seed + n)}`;
 }
 
 export default function mock(input: { legs?: MockLeg[]; mood?: string; count?: number }, seed: number) {
   const legs = input?.legs ?? [];
   const n = Math.max(1, input?.count ?? legs.length ?? 7);
   const out: string[] = [];
+  const used = new Map<string, number>();
   for (let i = 0; i < n; i++) {
     const leg = legs[i] ?? { turn: 'straight', last: i === n - 1 };
-    out.push(sentence(leg, seed + i * 7));
+    out.push(sentence(leg, seed + i * 7, used));
   }
   return { nudges: out };
 }

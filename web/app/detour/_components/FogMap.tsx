@@ -33,6 +33,7 @@ export type FogMapProps = {
   /** the projector wants the credit line; the phone does not */
   attribution?: boolean;
   fit?: LatLng[] | null;
+  fitPadding?: { top: number; bottom: number; left: number; right: number };
   onTap?: () => void;
   className?: string;
   style?: React.CSSProperties;
@@ -96,6 +97,7 @@ export function FogMap({
   dark = false,
   attribution = false,
   fit = null,
+  fitPadding,
   onTap,
   className,
   style,
@@ -170,7 +172,11 @@ export function FogMap({
             [Math.min(...lngs), Math.min(...lats)],
             [Math.max(...lngs), Math.max(...lats)],
           ],
-          { padding: { top: 96, bottom: 380, left: 36, right: 36 }, animate: false, maxZoom: 17 },
+          {
+            padding: fitPadding ?? { top: 96, bottom: 380, left: 36, right: 36 },
+            animate: false,
+            maxZoom: 17,
+          },
         );
         clearInterval(id);
       } catch {
@@ -178,7 +184,7 @@ export function FogMap({
       }
     }, 120);
     return () => clearInterval(id);
-  }, [fit]);
+  }, [fit, fitPadding]);
 
   // 3. one animation frame loop: follow, fog, route, markers
   useEffect(() => {
@@ -225,7 +231,7 @@ export function FogMap({
 
       // the projector view dims the basemap so the orange reads across a room
       if (p.dark) {
-        ctx.fillStyle = 'rgba(13,13,20,.42)';
+        ctx.fillStyle = 'rgba(13,13,20,.22)';
         ctx.fillRect(0, 0, w, h);
       }
 
@@ -259,6 +265,14 @@ export function FogMap({
       }
 
       // the places the walk actually passed
+      const labelBoxes: [number, number, number, number][] = [];
+      const fits = (x: number, y: number, w2: number, h2: number) => {
+        for (const b of labelBoxes) {
+          if (x < b[0] + b[2] && x + w2 > b[0] && y < b[1] + b[3] && y + h2 > b[1]) return false;
+        }
+        labelBoxes.push([x, y, w2, h2]);
+        return true;
+      };
       for (const poi of p.pois) {
         const q = project([poi.lat, poi.lng]);
         if (q.x < -60 || q.y < -60 || q.x > w + 60 || q.y > h + 60) continue;
@@ -273,10 +287,12 @@ export function FogMap({
         if (poi.label) {
           ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
           const tw = ctx.measureText(poi.label).width;
-          ctx.fillStyle = p.dark ? 'rgba(13,13,20,.78)' : 'rgba(255,255,255,.88)';
-          ctx.fillRect(q.x + 10, q.y - 10, tw + 12, 20);
-          ctx.fillStyle = p.dark ? '#F0F0F8' : '#0A0A0F';
-          ctx.fillText(poi.label, q.x + 16, q.y + 4);
+          if (fits(q.x + 10, q.y - 10, tw + 12, 20)) {
+            ctx.fillStyle = p.dark ? 'rgba(13,13,20,.78)' : 'rgba(255,255,255,.88)';
+            ctx.fillRect(q.x + 10, q.y - 10, tw + 12, 20);
+            ctx.fillStyle = p.dark ? '#F0F0F8' : '#0A0A0F';
+            ctx.fillText(poi.label, q.x + 16, q.y + 4);
+          }
         }
       }
 
@@ -284,10 +300,10 @@ export function FogMap({
         const q = project([p.endpoint.lat, p.endpoint.lng]);
         ctx.beginPath();
         ctx.arc(q.x, q.y, 10, 0, Math.PI * 2);
-        ctx.fillStyle = '#0A0A0F';
+        ctx.fillStyle = p.dark ? '#F0F0F8' : '#0A0A0F';
         ctx.fill();
         ctx.lineWidth = 3;
-        ctx.strokeStyle = '#fff';
+        ctx.strokeStyle = p.dark ? '#0D0D14' : '#fff';
         ctx.stroke();
         if (p.endpoint.label) {
           ctx.font = '700 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';

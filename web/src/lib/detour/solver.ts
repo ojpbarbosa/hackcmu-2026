@@ -48,7 +48,7 @@ const AVENUES = /forbes|fifth|bigelow|craig/i;
 
 /** How much each mood cares about a kind of place. 1 is neutral. */
 const MOOD_WEIGHTS: Record<string, Record<string, number>> = {
-  'somewhere new': { artwork: 1.4, memorial: 1.3, viewpoint: 1.3, museum: 1.3, theatre: 1.2, garden: 1.2 },
+  'somewhere new': { artwork: 1.15, memorial: 1.2, viewpoint: 1.3, museum: 1.25, theatre: 1.2, garden: 1.2 },
   quiet: { park: 1.6, garden: 1.5, library: 1.4, place_of_worship: 1.3, artwork: 1.2, bar: 0.5, fast_food: 0.4, nightclub: 0.3 },
   hungry: { bakery: 1.8, cafe: 1.6, restaurant: 1.5, ice_cream: 1.4, fast_food: 1.2, deli: 1.4, pub: 1.1, bank: 0.5 },
   trees: { park: 1.8, garden: 1.7, nature_reserve: 1.6, greenhouse: 1.5, pitch: 1.2, fast_food: 0.5 },
@@ -109,6 +109,7 @@ export function planWalk(
   const legs: WalkLeg[] = [];
   const consideredIds = new Set<string>();
   const chosenIds = new Set<string>();
+  const kindCount = new Map<string, number>();
   const usedNodes = new Set<string>([startNode]);
 
   let cur = startNode;
@@ -134,7 +135,9 @@ export function planWalk(
       if (elapsed + rest > budgetSeconds - SLACK_SECONDS) continue;
       consideredIds.add(c.poi.id);
       if (detour < minDetour) continue; // already standing there
-      const score = c.novelty / Math.sqrt(detour);
+      // a walk past seven statues is one idea, not seven: the fourth of a kind is worth less
+      const diversity = 0.72 ** (kindCount.get(c.poi.kind) ?? 0);
+      const score = (c.novelty * diversity) / Math.sqrt(detour);
       if (!best || score > best.score) {
         best = { c, nodes: pathTo(prev, c.poi.nodeId), seconds: detour, score };
       }
@@ -148,6 +151,7 @@ export function planWalk(
     cur = l.toNode;
     chosenIds.add(best.c.poi.id);
     usedNodes.add(best.c.poi.nodeId);
+    kindCount.set(best.c.poi.kind, (kindCount.get(best.c.poi.kind) ?? 0) + 1);
   }
 
   // the last leg always lands on the endpoint
