@@ -180,7 +180,7 @@ export default function PalateTable() {
           onClick={() => act('buildOrder')}
           disabled={heads === 0 || merged.everyone.length + merged.splits.length === 0}
         >
-          Build the table&apos;s order{total ? ` · ${money(total)}` : ''}
+          {orderRows.length ? 'Rebuild' : 'Build'} the table&apos;s order{total ? ` · ${money(total)}` : ''}
         </CTA>
         {orderRows.length ? (
           <CTA variant="ghost" onClick={() => act('resetOrder')}>
