@@ -278,7 +278,9 @@ function seedDemo(state: FamState, n: number, at: number): FamState {
   const pairCount = Math.round(added.length * 0.6);
   for (let i = 0; i < pairCount; i++) {
     const a = added[i % added.length];
-    const b = added[(i * 3 + 1) % added.length];
+    // two in three meetings happen inside a scene (the archetypes cycle every 8),
+    // the rest cross the room
+    const b = added[(i % 3 === 2 ? i * 3 + 1 : i + ARCHETYPES.length) % added.length];
     if (!a || !b || a.id === b.id) continue;
     if (bumps.some((x) => (x.a === a.id && x.b === b.id) || (x.a === b.id && x.b === a.id))) continue;
     const raw = exchangeMock(
