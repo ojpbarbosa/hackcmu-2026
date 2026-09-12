@@ -200,6 +200,17 @@ Query aids exist only for demos and screenshots; they are not user features.
 6. Aids: any palate route accepts `?as=<id>&name=<name>&tone=<1-4>` so one laptop can play three
    seats; "Paste a menu" parses free text (mock parser without a key).
 
+## QA notes (Sat 05:00)
+
+- Identity is stored per app (`hack.member.<app>`), so one phone can play all four apps without
+  dragging a name across; each app asks for a name once.
+- Cast: if a member locks their phone mid-cast, anyone who has answered sees **Reveal without
+  <name>** once two answers are in. Late joiners never block a reveal.
+- Palate's table page uses a class named `table`; it works because the kit's CSS is unlayered, but do
+  not remove `col` from that element.
+- Familiars "away" with zero shared keywords shows their keywords as outline chips; reads oddly.
+- MapLibre logs missing-sprite warnings in devtools on Detour; cosmetic.
+
 ## Known gaps to say out loud if asked
 
 - Model calls are attributed honestly: with no key the ladder says `mock`. Paste the IFM key to go live.
